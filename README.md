@@ -1,6 +1,8 @@
 # Monitor Infrastructure
 
-&copy; Atos 2016
+&copy; Atos Spain S.A. 2016
+
+The Monitor Infrastructure is a component of the European Project TANGO (http://tango-project.eu ).
 
 -----------------------
 
