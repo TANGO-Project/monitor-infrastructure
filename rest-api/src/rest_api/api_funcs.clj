@@ -1,3 +1,11 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; This code is being developed for the TANGO Project: http://tango-project.eu
+;;
+;; Copyright: Roi Sucasas Font, Atos Research and Innovation, 2017.
+;;
+;; This code is licensed under an Apache 2.0 license. Please, refer to the
+;; LICENSE.TXT file for more information
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ns rest-api.api-funcs
   (:require [rest-api.common :as com]
             [rest-api.api-resp-parser :as r]
@@ -60,7 +68,7 @@
   [id]
   (let [res (q/query id)]
     (if-not (nil? res)
-      (let [db    (res :db) 
+      (let [db    (res :db)
             query (res :query)]
         (api-query db query))
       (gen-response (str "GET /api/query-by-id/ [" id "]") #(r/gen-error-txt "Query not found")))))
