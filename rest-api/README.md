@@ -1,5 +1,11 @@
 # rest-api
 
+&copy; Atos Spain S.A. 2016
+
+The rest-api module is a subcomponent of the Monitor Infrastructure and part of the European Project TANGO (http://tango-project.eu ).
+
+-----------------------
+
 **REST API** application that connects to [INFLUXDB](https://docs.influxdata.com/influxdb) in order to retrieve the values from Collectd.
 
 [INFLUXDB](https://docs.influxdata.com/influxdb/v1.2/guides/querying_data/) returns JSON. The results of your query appear in the "results" array. If an error occurs, InfluxDB sets an "error" key with an explanation of the error.

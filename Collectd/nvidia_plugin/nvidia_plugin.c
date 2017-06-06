@@ -1,7 +1,12 @@
 /*
- * Collectd NVIDIA plugin 
+ * Collectd NVIDIA plugin
  *
- * This plugin has been created taken as a basis the plugin template for collectd written by Sebastian Harl <sh@tokkee.org> 
+ * Copyright: Roi Sucasas Font, Atos Research and Innovation, 2017.
+ *
+ * This code is being developed for the TANGO Project: http://tango-project.euThis
+ * and is licensed under an Apache 2.0 license. Please, refer to the LICENSE.TXT file for more information
+ *
+ * This plugin has been created taken as a basis the plugin template for collectd written by Sebastian Harl <sh@tokkee.org>
  * https://github.com/collectd/collectd/tree/master/contrib/examples/myplugin.c
  *
  */
@@ -64,7 +69,7 @@ static data_source_t dsrc[1] =
  * - number of data sources
  * - list of data sources
  *
- * NOTE: If you're defining a custom data-set, you have to make that known to any servers as well. 
+ * NOTE: If you're defining a custom data-set, you have to make that known to any servers as well.
  * Else, the server is not able to store values using the type defined by that data-set.
  * It is strongly recommended to use one of the types and data-sets pre-defined in the types.db file.
  */
@@ -79,7 +84,7 @@ static data_set_t ds =
  */
 static int my_init(void) {
 	nvmlReturn_t result;
-	
+
 	/* open sockets, initialize data structures, ... */
 	result = nvmlInit();
 	if (NVML_SUCCESS != result) {
@@ -128,9 +133,9 @@ static int submitPower(gauge_t value, unsigned int deviceIndex) {
 
 	vl.values = &(value_t) { .gauge = value }; /* Convert the gauge_t to a value_t and add it to the value_list_t. */
 	vl.values_len = 1;
-	
+
 	sprintf(strDeviceIndex, "%d", deviceIndex);
-	
+
 	sstrncpy(vl.host, hostname_g, sizeof (vl.host));
 	sstrncpy(vl.plugin, "monitoring", sizeof (vl.plugin));
 	sstrncpy(vl.plugin_instance, "nvidia", sizeof (vl.plugin_instance)); // <<<<<
@@ -149,7 +154,7 @@ static int my_read (void) {
 	nvmlReturn_t result;
 	//gauge_t value;
 	unsigned int device_count, i;
-	
+
 	/* do the magic to read the data : gauge_t value = random (); */
 	result = nvmlDeviceGetCount(&device_count);
 	if (NVML_SUCCESS != result) {
@@ -157,7 +162,7 @@ static int my_read (void) {
 		plugin_log(LOG_WARNING, "Failed to query device count");
 		return 0;
 	}
-	
+
 	for (i = 0; i < device_count; i++) {
 		nvmlDevice_t device;
 		char name[NVML_DEVICE_NAME_BUFFER_SIZE];
@@ -206,14 +211,14 @@ static int my_read (void) {
 		else {
 			totalWatts = *power / 1000.0;
 			printf(">> power: %f Watts\n", totalWatts);
-			
-			
+
+
 			if (submitPower(totalWatts, i) != 0) {
 				WARNING("nvidia_plugin plugin: Dispatching a value failed.");
 			}
 		}
 	}
-	
+
 	/* A return value != 0 indicates an error and the plugin will be skipped for an increasing amount of time. */
 	return 0;
 }
@@ -251,7 +256,7 @@ static void my_log(int severity, const char *msg, user_data_t *ud) {
  */
 static int my_shutdown(void) {
 	nvmlReturn_t result;
-	
+
 	/* close sockets, free data structures, ... */
 	result = nvmlShutdown();
 	if (NVML_SUCCESS != result) {
@@ -259,7 +264,7 @@ static int my_shutdown(void) {
 		plugin_log(LOG_WARNING, "Failed to shutdown NVML");
 		return -1;
 	}
-	
+
 	return 0;
 }
 
@@ -277,4 +282,3 @@ void module_register(void) {
 	plugin_register_shutdown("nvidia_plugin", my_shutdown);
     return;
 }
-
