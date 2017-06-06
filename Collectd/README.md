@@ -14,17 +14,18 @@
 
 1. Direct install (Ubuntu 14, 16)
 
-> sudo apt-get update
-
-> sudo apt-get install collectd collectd-utils
+```bash
+sudo apt-get update
+sudo apt-get install collectd collectd-utils
+```
 
 2. Install from sources
 
-> git clone https://github.com/collectd/collectd.git
-
-> cd collectd
-
-> ./build.sh
+```bash
+git clone https://github.com/collectd/collectd.git
+cd collectd
+./build.sh
+```
 
 -----------------------
 
@@ -35,23 +36,30 @@
 
      For example, compile the *nvidia_plugin* (collectd sources located in /_COLLECTD__SOURCES_, and nvidia library located in /_NVIDIA__LIBS_):
 
-    >	gcc -DHAVE_CONFIG_H -Wall -Werror -g -O2 -shared -fPIC -I/COLLECTD_SOURCES_/ -I/COLLECTD_SOURCE/daemon/ -lnvidia-ml -LNVIDIA_LIBS/ -ldl -o nvidia_plugin.so nvidia_plugin.c
+```bash
+gcc -DHAVE_CONFIG_H -Wall -Werror -g -O2 -shared -fPIC -I/COLLECTD_SOURCES_/ -I/COLLECTD_SOURCE/daemon/ -lnvidia-ml -LNVIDIA_LIBS/ -ldl -o nvidia_plugin.so nvidia_plugin.c
+```
 
   2. Modify permissions and owner
 
-    > sudo chmod 0755 nvidia_plugin.so
-
-    > sudo chown -R root:root nvidia_plugin.so
+```bash
+sudo chmod 0755 nvidia_plugin.so
+sudo chown -R root:root nvidia_plugin.so
+```
 
   3. Copy file in collectd plugins library: /opt/collectd/lib/collectd
 
-    > sudo cp nvidia_plugin.so /opt/collectd/lib/collectd/nvidia_plugin.so
+```bash
+sudo cp nvidia_plugin.so /opt/collectd/lib/collectd/nvidia_plugin.so
+```
 
   4. Edit 'collectd.conf' to enable the nvidia plugin and the CSV plugin (this last one just to see the output from the custom plugin)
 
-    > sudo vi /opt/collectd/etc/collectd.conf
-
+```bash
+sudo vi /opt/collectd/etc/collectd.conf
 ```
+
+```xml
 ...
 LoadPlugin nvidia_plugin
 LoadPlugin csv
@@ -64,7 +72,9 @@ LoadPlugin csv
 
   5. Start collectd and check errors
 
-    > sudo /home/atos/collectd/collectd
+```bash
+sudo /home/atos/collectd/collectd
+```
 
 -----------------------
 
@@ -74,20 +84,20 @@ LoadPlugin csv
 
 #### 2. Install InfluxDB (ubuntu, 64-bit systems)
 
-> wget https://dl.influxdata.com/influxdb/releases/influxdb_0.13.0_amd64.deb
-
-> sudo dpkg -i influxdb_0.13.0_amd64.deb
-
-> sudo service influxdb start
-
-> sudo service influxdb statu
+```bash
+wget https://dl.influxdata.com/influxdb/releases/influxdb_0.13.0_amd64.deb
+sudo dpkg -i influxdb_0.13.0_amd64.deb
+sudo service influxdb start
+sudo service influxdb statu
+```
 
 #### 3. Install Grafana
-> wget https://grafanarel.s3.amazonaws.com/builds/grafana_3.0.4-1464167696_amd64.deb
 
-> sudo apt-get install -y adduser libfontconfig
-
-> sudo dpkg -i grafana_3.0.4-1464167696_amd64.deb
+```bash
+wget https://grafanarel.s3.amazonaws.com/builds/grafana_3.0.4-1464167696_amd64.deb
+sudo apt-get install -y adduser libfontconfig
+sudo dpkg -i grafana_3.0.4-1464167696_amd64.deb
+```
 
 #### 4. Setup Collectd
 
@@ -103,7 +113,8 @@ See [Monitoring with Collectd, InfluxDB & Grafana](http://www.vishalbiyani.com/g
 
 
 ###### Collectd configuration file example:
-```
+
+```xml
 # Config file for collectd(1).
 #
 # Some plugins need additional configuration and are disabled by default.
@@ -225,34 +236,16 @@ LoadPlugin write_graphite
 </Plugin>
 
 <Plugin network>
-#       # client setup:
-#       Server "ff18::efc0:4a42" "25826"
+        # client setup:
         <Server "192.168.252.41" "25826">
-#               SecurityLevel Encrypt
-#               Username "user"
-#               Password "secret"
-#               Interface "eth0"
-#               ResolveInterval 14400
         </Server>
-#       TimeToLive 128
-#
-#       # server setup:
-#       Listen "ff18::efc0:4a42" "25826"
+
+        # server setup:
 #       <Listen "239.192.74.66" "25826">
 #               SecurityLevel Sign
 #               AuthFile "/etc/collectd/passwd"
 #               Interface "eth0"
 #       </Listen>
-#       MaxPacketSize 1452
-#
-#       # proxy setup (client and server as above):
-#       Forward true
-#
-#       # statistics about the network plugin itself
-#       ReportStats false
-#
-#       # "garbage collection"
-#       CacheFlush 1800
 </Plugin>
 
 <Plugin rrdtool>
@@ -279,7 +272,8 @@ LoadPlugin write_graphite
 ```
 
 ###### InfluxDB configuration file example:
-```
+
+```bash
 ### Welcome to the InfluxDB configuration file.
 
 # Once every 24 hours InfluxDB will report anonymous data to m.influxdb.com

@@ -8,6 +8,8 @@
 
 -----------------------
 
+### Description
+
 The responsibility of this component is twofold. On one side it must provide running applications with metrics of the status of different devices, such as CPU, GPUs, FPGAs, etc. This information should be both energy consumption and performance status. On the other side it should also provide historical statistics for device metrics for latter analysis of upper components of the TANGO architecture.
 
 ![TANGO architecture](resources/tango-monitor_infr.png)
