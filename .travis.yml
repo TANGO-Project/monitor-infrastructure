@@ -1,7 +1,9 @@
 language: clojure
 
+
 before_install:
 - cd rest-api
+
 
 script:
 - lein test
