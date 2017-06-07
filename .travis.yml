@@ -1,6 +1,10 @@
 language: clojure
 
-script: cd rest-api && lein test
+before_install:
+- cd rest-api
+
+script:
+- lein test
 
 after_success:
 - CLOVERAGE_VERSION=1.0.7-SNAPSHOT lein cloverage --codecov
