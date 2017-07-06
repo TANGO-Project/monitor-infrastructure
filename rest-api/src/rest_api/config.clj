@@ -14,9 +14,10 @@
 
 ;; default configuration:
 (def ^:private default-configuration {
-  :name "Monitoring infrastructure REST API"
-  :version "0.1.0"
-  :influxdb-api "http://192.168.252.41:8086"})
+  :name         "Monitoring infrastructure REST API"
+  :version      "0.1.0"
+  :influxdb-api "http://192.168.252.41:8086"
+  :db           "collectd"})
 
 ;; read configuration values into map
 (defn- read-configuration [path]
@@ -37,6 +38,7 @@
 (def APP-NAME (conf :name))
 (def APP-VERSION (conf :version))
 (def ^:private INFLUXDB-API (atom (conf :influxdb-api)))
+(def ^:private DB (atom (conf :db)))
 
 ;; FUNCTION: get-INFLUXDB-API
 (defn get-influxdb-api "" [] (deref INFLUXDB-API))
@@ -45,3 +47,11 @@
 (defn change-influxdb-api-url ""
   [new-url]
   (swap! INFLUXDB-API (constantly new-url)))
+
+;; FUNCTION: get-DB
+(defn get-db "" [] (deref DB))
+
+;; FUNCTION: change-DB
+(defn change-db ""
+  [new-db]
+  (swap! DB (constantly new-db)))

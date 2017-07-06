@@ -4,5 +4,6 @@
 {
   :name "Monitoring infrastructure REST API"
   :version "0.1.0"
-  :influxdb-api "http://192.168.252.41:8086"
+  :influxdb-api "http://192.168.252.2:8086"
+  :db "collectd"
 }

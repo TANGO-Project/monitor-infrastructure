@@ -23,13 +23,20 @@
   ; api
   (context "/api" []
     (defroutes api-users-routes
-      (GET    "/"                    {headers :headers}                                   (api/api-get))
-      (GET    "/influxdb-url"        {headers :headers}                                   (api/get-influxdb-url))
-      (POST   "/influxdb-url"        {headers :headers, body :body}                       (api/set-influxdb-url body))
-      (GET    "/ping"                {headers :headers}                                   (api/api-ping))
-      (GET    "/test-query"          {headers :headers}                                   (api/api-test-query))
-      (GET    "/query/:db/:query"    {{db :db query :query} :params, headers :headers}    (api/api-query db query))
-      (GET    "/query-by-id/:id"     {{id :id} :params, headers :headers}                 (api/api-query-by-id id))))
+      (GET    "/"                         {headers :headers}                                   (api/api-get))
+      (GET    "/influxdb-url"             {headers :headers}                                   (api/get-influxdb-url))
+      (POST   "/influxdb-url"             {headers :headers, body :body}                       (api/set-influxdb-url body))
+      (GET    "/db"                       {headers :headers}                                   (api/get-db))
+      (POST   "/db"                       {headers :headers, body :body}                       (api/set-db body))
+      (GET    "/ping"                     {headers :headers}                                   (api/api-ping))
+      ;(GET    "/test-query"               {headers :headers}                                   (api/api-test-query))
+      ;(GET    "/query/:db/:query"         {{db :db query :query} :params, headers :headers}    (api/api-query db query))
+      ;(GET    "/query-by-id/:id"          {{id :id} :params, headers :headers}                 (api/api-query-by-id id))
+      ;; POWER-STATS: used by Programming Model Component
+      (GET    "/monitored/hosts"          {headers :headers}                                   (api/get-MONITORED-HOSTS))
+      (GET    "/monitored/series"         {headers :headers}                                   (api/get-MONITORED-SERIES))
+      (GET    "/monitored/hosts-series"   {headers :headers}                                   (api/get-MONITORED-HOSTS-SERIES))
+      (GET    "/power-stats/:host/:time"  {{host :host time :time} :params, headers :headers}  (api/get-power-stats host time nil))))
   ; routes
   (route/resources "/")
   (route/not-found (response/response {:message "-Route not found-"})))

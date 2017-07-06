@@ -10,20 +10,21 @@
   :description "Monitoring Infrastructure REST API"
   :url "http://localhost"
   :min-lein-version "1.8.0"
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [compojure "1.5.1"]
-                 [cheshire "5.7.1"]                   ; MIT License ; https://github.com/dakrone/cheshire
-                 [clj-http "3.5.0"]                   ; MIT License ; https://github.com/dakrone/clj-http/
-                 [ring-cors/ring-cors "0.1.10"]       ; Eclipse Public License ; https://github.com/r0man/ring-cors
-                 [ring/ring-defaults "0.3.0"]         ; MIT License ; https://github.com/ring-clojure/ring-defaults
-                 [ring/ring-json "0.4.0"]             ; MIT License ; https://github.com/ring-clojure/ring-json
-                 [org.clojure/tools.logging "0.3.1"]  ; Eclipse Public License - Version 1.0 ; https://github.com/clojure/tools.logging
-                 [log4j/log4j "1.2.17"                ; Apache License, Version 2.0 ; http://logging.apache.org/log4j/1.2/
-                  :exclusions [javax.mail/mail
-                              javax.jms/jms
-                              com.sun.jdmk/jmxtools
-                              com.sun.jmx/jmxri]]
-                 [proto-repl "0.3.1"]]
+  :dependencies [ [org.clojure/clojure "1.8.0"]
+                  [compojure "1.5.1"]
+                  [cheshire "5.7.1"]                    ; MIT License ; https://github.com/dakrone/cheshire
+                  [clj-http "3.5.0"]                    ; MIT License ; https://github.com/dakrone/clj-http/
+                  [ring-cors/ring-cors "0.1.10"]        ; Eclipse Public License ; https://github.com/r0man/ring-cors
+                  [ring/ring-defaults "0.3.0"]          ; MIT License ; https://github.com/ring-clojure/ring-defaults
+                  [ring/ring-json "0.4.0"]              ; MIT License ; https://github.com/ring-clojure/ring-json
+                  [org.clojure/tools.logging "0.3.1"]   ; Eclipse Public License - Version 1.0 ; https://github.com/clojure/tools.logging
+                  [log4j/log4j "1.2.17"                 ; Apache License, Version 2.0 ; http://logging.apache.org/log4j/1.2/
+                    :exclusions [ javax.mail/mail
+                                  javax.jms/jms
+                                  com.sun.jdmk/jmxtools
+                                  com.sun.jmx/jmxri]]
+                  [org.clojure/data.json "0.2.6"]       ; Eclipse Public License - Version 1.0  https://github.com/clojure/data.json
+                  [proto-repl "0.3.1"]]
   :plugins [[lein-ring "0.12.0"]]
   :ring {:handler rest-api.handler/app
          :port 8082
