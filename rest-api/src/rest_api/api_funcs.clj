@@ -7,15 +7,15 @@
 ;; LICENSE.TXT file for more information
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ns rest-api.api-funcs
-  (:use [clojure.string :only [index-of]])
   (:require [rest-api.common :as common]
-            [rest-api.api-resp-parser :as r]
-            [rest-api.config :as cfg]
-            [rest-api.queries :as queries]
+            [rest-api.api-resp-parser :as api-resp-parser]
+            [rest-api.config :as config]
             [ring.util.response :as ring-resp]
             [cheshire.core :as cheshire.core]
             [rest-api.logs :as logs]
             [clojure.data.json :as json]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; FUNCTION: gen-response
 (defn- gen-response "Executes function f and generates response"
@@ -27,18 +27,18 @@
     (catch Exception e
       (do
         (logs/log-exception e)
-        (ring-resp/response (r/gen-error-response txt e))))))
+        (ring-resp/response (api-resp-parser/gen-error-response txt e))))))
 
 ;; FUNCTION: api-get
-(defn api-get "" []
+(defn api-get ""
+  []
   (gen-response
     "GET /api"
-    #(r/gen-resp-map {:version cfg/APP-VERSION
-                      :status (str "Rest Api Service running [influxdb:" (cfg/get-influxdb-api) "]...")} "" "")))
+    #(api-resp-parser/gen-resp-map {:version config/APP-VERSION
+                                    :status (str "Rest Api Service running [influxdb:" (config/get-influxdb-api) "]...")} "" "")))
 
 ;; FUNCTION: get-influxdb-url
-(defn get-influxdb-url "" []
-  (gen-response "GET /api/influxdb-url" #(r/gen-resp (cfg/get-influxdb-api))))
+(defn get-influxdb-url "" [] (gen-response "GET /api/influxdb-url" #(api-resp-parser/gen-resp (config/get-influxdb-api))))
 
 ;; FUNCTION: set-influxdb-url
 (defn set-influxdb-url ""
@@ -46,11 +46,10 @@
   (let [formatted-body (cheshire.core/parse-string (slurp body))]
     (do
       (logs/log-info formatted-body)
-      (gen-response "POST /api/influxdb-url" #(r/gen-not-implemented)))))
+      (gen-response "POST /api/influxdb-url" #(api-resp-parser/gen-not-implemented)))))
 
 ;; FUNCTION: get-db
-(defn get-db "" []
-  (gen-response "GET /api/db" #(r/gen-resp (cfg/get-db))))
+(defn get-db ""  [] (gen-response "GET /api/db" #(api-resp-parser/gen-resp (config/get-db))))
 
 ;; FUNCTION: set-db
 (defn set-db ""
@@ -58,17 +57,18 @@
   (let [formatted-body (cheshire.core/parse-string (slurp body))]
     (do
       (logs/log-info formatted-body)
-      (gen-response "POST /api/db" #(r/gen-not-implemented)))))
+      (gen-response "POST /api/db" #(api-resp-parser/gen-not-implemented)))))
 
 ;; FUNCTION: api-ping
-(defn api-ping "" []
-  (gen-response "GET /api/ping" #(r/gen-resp-query-headers (common/GET (str (cfg/get-influxdb-api) "/ping")))))
+(defn api-ping ""
+  []
+  (gen-response "GET /api/ping" #(api-resp-parser/gen-resp-query-headers (common/GET (str (config/get-influxdb-api) "/ping")))))
 
 ;; FUNCTION: get-map-body
 (defn- get-map-body ""
   [query]
   (try
-    ((common/GET (str (cfg/get-influxdb-api) "/query?db=" (cfg/get-db) "&q=" query)) :body)
+    ((common/GET (str (config/get-influxdb-api) "/query?db=" (config/get-db) "&q=" query)) :body)
     (catch Exception e (do (logs/log-exception e) nil))))
 
 ;; FUNCTION: get-monitored-hosts
@@ -96,7 +96,7 @@
 (defn- get-query-result ""
   [query]
   (try
-    (let [response  (json/read-str ((common/GET (str (cfg/get-influxdb-api) "/query?db=" (cfg/get-db) "&q=" query)) :body) :key-fn keyword)]
+    (let [response  (json/read-str ((common/GET (str (config/get-influxdb-api) "/query?db=" (config/get-db) "&q=" query)) :body) :key-fn keyword)]
       {:res "SUCCESS" :response response})
     (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e}))))
 
@@ -123,39 +123,25 @@
                                 (count ((first ((first (get-in res [:response :results])) :series)) :values)))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; MAPS
+;; MAPS: information about monitored hosts and metrics (from Collectd)
 
 ;; LIST OF MONITORED HOSTS
-(def MONITORED-HOSTS
-  (delay (get-monitored-hosts)))
-
-(defn get-MONITORED-HOSTS ""
-  []
-  (ring-resp/response (deref MONITORED-HOSTS)))
+(def MONITORED-HOSTS (delay (get-monitored-hosts)))
+(defn get-MONITORED-HOSTS "" [] (ring-resp/response {:monitored-hosts (deref MONITORED-HOSTS)}))
 
 ;; MONITORED TAGS
-(def MONITORED-SERIES
-  (delay (get-monitored-series)))
-
-(defn get-MONITORED-SERIES ""
-  []
-  (ring-resp/response (deref MONITORED-SERIES)))
+(def MONITORED-SERIES (delay (get-monitored-series)))
+(defn get-MONITORED-SERIES "" [] (ring-resp/response (deref MONITORED-SERIES)))
 
 ;; MONITORED TAGS & HOSTS
-(def MONITORED-HOSTS-SERIES
-  (delay (get-monitored-series-hosts)))
-
-(defn get-MONITORED-HOSTS-SERIES ""
-  []
-  (ring-resp/response (deref MONITORED-HOSTS-SERIES)))
+(def MONITORED-HOSTS-SERIES (delay (get-monitored-series-hosts)))
+(defn get-MONITORED-HOSTS-SERIES "" [] (ring-resp/response (deref MONITORED-HOSTS-SERIES)))
 
 ;; NUMBER OF INSTANCES PER HOST & TAG
 (def HOSTS-TAGS-INSTANCES
   (delay (into {}
     (for [[k v] @MONITORED-HOSTS-SERIES]
       {k (into {} (get-total-intances k v))}))))
-
-;(get-in HOSTS-TAGS-INSTANCES ["cpu_value" "ns50.bullx"])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; PROGRAMMING MODEL DATA:
@@ -177,15 +163,13 @@
     (let [response  (json/read-str
                       ((let [query  (str "SELECT " metric-value "(value) FROM " metric " WHERE host = '" node "' "
                                          "AND type_instance = '" instance "' AND time > now() - " time-period ";")]
-                        (common/GET (str (cfg/get-influxdb-api) "/query?db=" (cfg/get-db) "&q=" query))) :body)
+                        (common/GET (str (config/get-influxdb-api) "/query?db=" (config/get-db) "&q=" query))) :body)
                       :key-fn keyword)]
       {:res "SUCCESS" :response response})
     (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e}))))
 
 ;; FUNCTION: process-response
-(defn- process-response ""
-  [r]
-  (second (first ((first ((first ((r :response) :results)) :series)) :values))))
+(defn- process-response "" [r] (second (first ((first ((first ((r :response) :results)) :series)) :values))))
 
 ;; FUNCTION: extract-result
 (defn- extract-result ""
@@ -213,59 +197,13 @@
               (remove nil?
                 (for [[k v] instances-per-metric]
                   (cond
+                    ;; NVIDIA probes
                     (= k "monitoring_value")  (into {}
                                                 (for [i (range 0 v)]
                                                   { (keyword (str "gpu" i))
                                                     [:max   (extract-result k host i "max" time)
                                                      :min   (extract-result k host i "min" time)
                                                      :mean  (extract-result k host i "mean" time)]}))
-                    :else                      {k "not implemented"}))))}})
+                    ;; Others: not implemented
+                    :else                       {k "not implemented"}))))}})
       (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e})))))
-
-
-; (get-in HOSTS-TAGS-INSTANCES ["cpu_value" "ns50.bullx"])
-
-
-;(get-power-stats "ns50.bullx" "120d" nil)
-
-
-;{:power-stats
-;  (let [host "ns50.bullx"]
-;    { host
-;      (into {}
-;        (remove nil?
-;          (for [[k v] instances-per-metric]
-;            (when (= k "monitoring_value")
-;              (into {}
-;                (for [i (range 0 v)]
-;                  { (keyword (str "gpu" i))
-;                    [:max (extract-result k host i "max")
-;                     :min (extract-result k host i "min")
-;                     :mean (extract-result k host i "mean")]}))))))})}
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; DEPRECATED:
-
-;; FUNCTION: api-test-query
-(defn api-test-query "" []
-  (gen-response
-    "GET /api/test-query"
-    #(r/gen-resp-query (common/GET (str (cfg/get-influxdb-api) "/query?db=collectd&q=SHOW MEASUREMENTS")))))
-
-;; FUNCTION: api-query
-(defn api-query ""
-  [db query]
-  (gen-response
-    (str "GET /api/query/:db/:query [" db "] [" query "]")
-    #(r/gen-resp-query (common/GET (str (cfg/get-influxdb-api) "/query?db=" db "&q=" query)))))
-
-;; FUNCTION: api-query-by-id
-(defn api-query-by-id ""
-  [id]
-  (let [res (queries/query id)]
-    (if-not (nil? res)
-      (let [db    (res :db)
-            query (res :query)]
-        (api-query db query))
-      (gen-response (str "GET /api/query-by-id/ [" id "]") #(r/gen-error-txt "Query not found")))))

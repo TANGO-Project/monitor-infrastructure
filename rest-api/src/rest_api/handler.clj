@@ -10,11 +10,10 @@
   (:use [compojure.core])
   (:require [ring.util.response :as response]
             [ring.middleware.json :as middleware]
-            [clj-http.client :as http-client]
             [compojure.route :as route]
             [compojure.handler :as handler]
             [ring.middleware.cors :refer [wrap-cors]]
-            [rest-api.api-funcs :as api]))
+            [rest-api.api-funcs :as api-funcs]))
 
 ;; ROUTES / APP / SERVER ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defroutes app-routes
@@ -23,20 +22,18 @@
   ; api
   (context "/api" []
     (defroutes api-users-routes
-      (GET    "/"                         {headers :headers}                                   (api/api-get))
-      (GET    "/influxdb-url"             {headers :headers}                                   (api/get-influxdb-url))
-      (POST   "/influxdb-url"             {headers :headers, body :body}                       (api/set-influxdb-url body))
-      (GET    "/db"                       {headers :headers}                                   (api/get-db))
-      (POST   "/db"                       {headers :headers, body :body}                       (api/set-db body))
-      (GET    "/ping"                     {headers :headers}                                   (api/api-ping))
-      ;(GET    "/test-query"               {headers :headers}                                   (api/api-test-query))
-      ;(GET    "/query/:db/:query"         {{db :db query :query} :params, headers :headers}    (api/api-query db query))
-      ;(GET    "/query-by-id/:id"          {{id :id} :params, headers :headers}                 (api/api-query-by-id id))
+      (GET    "/"                         {headers :headers}                                   (api-funcs/api-get))
+      (GET    "/influxdb-url"             {headers :headers}                                   (api-funcs/get-influxdb-url))
+      (POST   "/influxdb-url"             {headers :headers, body :body}                       (api-funcs/set-influxdb-url body))
+      (GET    "/db"                       {headers :headers}                                   (api-funcs/get-db))
+      (POST   "/db"                       {headers :headers, body :body}                       (api-funcs/set-db body))
+      (GET    "/ping"                     {headers :headers}                                   (api-funcs/api-ping))
+      ;; Monitored components: hosts, metrics...
+      (GET    "/monitored/hosts"          {headers :headers}                                   (api-funcs/get-MONITORED-HOSTS))
+      (GET    "/monitored/series"         {headers :headers}                                   (api-funcs/get-MONITORED-SERIES))
+      (GET    "/monitored/hosts-series"   {headers :headers}                                   (api-funcs/get-MONITORED-HOSTS-SERIES))
       ;; POWER-STATS: used by Programming Model Component
-      (GET    "/monitored/hosts"          {headers :headers}                                   (api/get-MONITORED-HOSTS))
-      (GET    "/monitored/series"         {headers :headers}                                   (api/get-MONITORED-SERIES))
-      (GET    "/monitored/hosts-series"   {headers :headers}                                   (api/get-MONITORED-HOSTS-SERIES))
-      (GET    "/power-stats/:host/:time"  {{host :host time :time} :params, headers :headers}  (api/get-power-stats host time nil))))
+      (GET    "/power-stats/:host/:time"  {{host :host time :time} :params, headers :headers}  (api-funcs/get-power-stats host time nil))))
   ; routes
   (route/resources "/")
   (route/not-found (response/response {:message "-Route not found-"})))

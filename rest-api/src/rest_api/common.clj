@@ -23,24 +23,21 @@
     (catch Exception e
       (do (logs/log-exception e) nil))))
 
-;; FUNCTION: read-content
-(defn read-content "read file content values into map"
-  [path]
-  (let [fpath (get-resource path)]
-    (when-not (nil? fpath)
-      (read-string (slurp fpath)))))
-
 ;; HTTP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; common HTTP status codes:
+
 ;; OK : The request was fulfilled.
-(def HTRESP_OK 200)
+;(def HTRESP_OK 200)
+
 ;; CREATED : Following a POST command, this indicates success, but the textual part of the response line indicates
 ;;           the URI by which the newly created document should be known.
-(def HTRESP_CREATED 201)
+;(def HTRESP_CREATED 201)
+
 ;; ACCEPTED : The request has been accepted for processing, but the processing has not been completed.
 (def HTRESP_ACCEPTED 202)
+
 ;; Errors...
-(def HTRESP_UNAUTHORIZED 401)
+;(def HTRESP_UNAUTHORIZED 401)
 
 ;; GET ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; FUNCTION: GET
