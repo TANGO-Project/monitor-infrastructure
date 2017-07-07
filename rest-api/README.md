@@ -30,12 +30,8 @@ lein ring server
 
 B. Generate a .war file, and deploy it in a server container
 
-## About clojure
-
-### Create ring project
-
 ```bash
-lein new compojure PROJECT_NAME
+lein uberwar
 ```
 
 ## API
@@ -69,7 +65,7 @@ Response:
 
 -----------------------
 
-3.
+3. Set INFLUXDB API url
 
 ```
 POST "/api/influxdb-url"
@@ -78,7 +74,23 @@ POST "/api/influxdb-url"
 
 -----------------------
 
-4.
+4. Get INFLUXDB DATABASE (reference to Collectd connection configured previously in InfluxDB)
+
+```
+GET "/api/db"
+```
+
+-----------------------
+
+5. Set INFLUXDB DATABASE
+
+```
+POST "/api/db"
+```
+
+-----------------------
+
+6. Ping to service
 
 ```
 GET "/api/ping"
@@ -86,49 +98,57 @@ GET "/api/ping"
 
 -----------------------
 
-5.
+7. Get monitored hosts
 
 ```
-GET "/api/test-query"
+GET "/monitored/hosts"
 ```
 
------------------------
+Response:
 
-6.
-
-```
-GET "/api/query/:db/:query"
+```json
+{"monitored-hosts": ["ns50.bullx", "ns51.bullx", "ns54.bullx", "ns55.bullx", "ns56.bullx"]}
 ```
 
 -----------------------
 
-7.
+8. Get monitored series (collectd names assigned to the different metrics)
 
 ```
-GET "/api/query-by-id/:id"
+GET "/monitored/series"
 ```
 
 -----------------------
 
-### Queries examples:
+9. Get a list of the hosts and the series / metrics monitored in each of these hosts
 
-1. Get values from last hour:
-
-```sql
-SELECT value FROM cpu_value where time > now() - 1h limit 100;
+```
+GET "/monitored/hosts-series"
 ```
 
-2. Get max value:
+-----------------------
 
-```sql
-SELECT MAX(value) FROM cpu_value where time > now() - 1h limit 100;
+10. Get the power stats of a host
+
+```
+GET "/power-stats/:host/:time"
 ```
 
-3. Get min value:
+Response:
 
-```sql
-SELECT MIN(value) FROM cpu_value where time > now() - 1h limit 100;
+```json
+{
+  "power-stats": {
+    "ns50.bullx": {
+      "gpu0": ["max", 132.07000732421875, "min", 18.545000076293945, "mean", 20.290325199615207],
+      "gpu1": ["max", 126.88400268554688, "min", 18.731000900268555, "mean", 20.317622574830658],
+    }
+  }
+}
+
 ```
+
+-----------------------
 
 ## License
 
