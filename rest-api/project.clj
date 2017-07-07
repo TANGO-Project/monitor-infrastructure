@@ -25,7 +25,9 @@
                                   com.sun.jmx/jmxri]]
                   [org.clojure/data.json "0.2.6"]       ; Eclipse Public License - Version 1.0  https://github.com/clojure/data.json
                   [proto-repl "0.3.1"]]
-  :plugins [[lein-ring "0.12.0"]]
+  :plugins [[lein-ring "0.12.0"]
+            [lein-uberwar "0.2.0"]]
+  :uberwar {:handler rest-api.handler/app}
   :ring {:handler rest-api.handler/app
          :port 8082
          :open-browser? true
