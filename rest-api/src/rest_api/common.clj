@@ -44,10 +44,10 @@
 (defn GET "GET function call"
   [rest-api-url]
   (do
-    (logs/log-info "Calling [" rest-api-url "] ...")
+    (logs/log-debug "Calling [" rest-api-url "] ...")
     (let [resp (http-client/get rest-api-url)]
       (do
-        (logs/log-info " -> :status " (resp :status) ", :body " (resp :body))
+        (logs/log-debug " -> :status " (resp :status) ", :body " (resp :body))
         resp))))
 
 ;; POST ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -63,3 +63,14 @@
     (if (= HTRESP_ACCEPTED (:code res))
       (cheshire.core/parse-string (get-in res [:response :body]))
       {:code (:code res) :content res})))
+
+;; MATHS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; FUNCTION: round-number
+;; Examples: (round-number 78.57898794 :precision 3) (round-number 78.57898794) (round-number 78.5)
+(defn round-number "Rounds a number 'x'"
+  [x & {p :precision}]
+  (if p
+    (let [scale (Math/pow 10 p)]
+      (-> x (* scale) Math/round (/ scale)))
+    (Math/round x)))

@@ -22,7 +22,7 @@
   [txt f]
   (try
     (do
-      (logs/log-info txt)
+      (logs/log-debug txt)
       (ring-resp/response (f)))
     (catch Exception e
       (do
@@ -45,7 +45,7 @@
   [body]
   (let [formatted-body (cheshire.core/parse-string (slurp body))]
     (do
-      (logs/log-info formatted-body)
+      (logs/log-debug formatted-body)
       (gen-response "POST /api/influxdb-url" #(api-resp-parser/gen-not-implemented)))))
 
 ;; FUNCTION: get-db
@@ -56,7 +56,7 @@
   [body]
   (let [formatted-body (cheshire.core/parse-string (slurp body))]
     (do
-      (logs/log-info formatted-body)
+      (logs/log-debug formatted-body)
       (gen-response "POST /api/db" #(api-resp-parser/gen-not-implemented)))))
 
 ;; FUNCTION: api-ping
@@ -115,12 +115,12 @@
 (defn- get-total-intances ""
   [k v]
   (cond
-    (= k "cpu_value")   (for [x v]
-                          {x (let [res (get-query-result (str "SHOW SERIES FROM " k " WHERE host='" x "' AND type_instance = 'idle'"))]
-                                (count ((first ((first (get-in res [:response :results])) :series)) :values)))})
-    :else               (for [x v]
-                          {x (let [res (get-query-result (str "SHOW SERIES FROM " k " WHERE host='" x "'"))]
-                                (count ((first ((first (get-in res [:response :results])) :series)) :values)))})))
+    (= k config/SERIE-CPU-PLUGIN) (for [x v]
+                                    {x (let [res (get-query-result (str "SHOW SERIES FROM " k " WHERE host='" x "' AND type_instance = 'idle'"))]
+                                          (count ((first ((first (get-in res [:response :results])) :series)) :values)))})
+    :else                         (for [x v]
+                                    {x (let [res (get-query-result (str "SHOW SERIES FROM " k " WHERE host='" x "'"))]
+                                          (count ((first ((first (get-in res [:response :results])) :series)) :values)))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MAPS: information about monitored hosts and metrics (from Collectd)
@@ -168,6 +168,19 @@
       {:res "SUCCESS" :response response})
     (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e}))))
 
+;; TODO
+;; FUNCTION: get-val-node-between-t1t2
+(defn- get-val-node-between-t1t2 ""
+  [metric metric-value node instance t1 t2]
+  (try
+    (let [response  (json/read-str
+                      ((let [query  (str "SELECT " metric-value "(value) FROM " metric " WHERE host = '" node "' "
+                                         "AND type_instance = '" instance "' AND time > now() - " t1 ";")]
+                        (common/GET (str (config/get-influxdb-api) "/query?db=" (config/get-db) "&q=" query))) :body)
+                      :key-fn keyword)]
+      {:res "SUCCESS" :response response})
+    (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e}))))
+
 ;; FUNCTION: process-response
 (defn- process-response "" [r] (second (first ((first ((first ((r :response) :results)) :series)) :values))))
 
@@ -175,6 +188,14 @@
 (defn- extract-result ""
   [metric host instance type time]
   (let [res (get-val-node metric type host instance time)]
+    (if (= "SUCCESS" (res :res))
+      (process-response res)
+      nil)))
+
+;; FUNCTION: extract-result-t1t2
+(defn- extract-result-t1t2 ""
+  [metric host instance type t1 t2]
+  (let [res (get-val-node-between-t1t2 metric type host instance t1 t2)]
     (if (= "SUCCESS" (res :res))
       (process-response res)
       nil)))
@@ -198,12 +219,333 @@
                 (for [[k v] instances-per-metric]
                   (cond
                     ;; NVIDIA probes
-                    (= k "monitoring_value")  (into {}
-                                                (for [i (range 0 v)]
-                                                  { (keyword (str "gpu" i))
-                                                    [:max   (extract-result k host i "max" time)
-                                                     :min   (extract-result k host i "min" time)
-                                                     :mean  (extract-result k host i "mean" time)]}))
+                    (= k config/SERIE-NVIDIA-GPUs)  (into {}
+                                                      (for [i (range 0 v)]
+                                                        { (keyword (str "gpu" i))
+                                                          [:max   (extract-result k host i "max" time)
+                                                           :min   (extract-result k host i "min" time)
+                                                           :mean  (extract-result k host i "mean" time)]}))
                     ;; Others: not implemented
-                    :else                       {k "not implemented"}))))}})
+                    :else                           {k "not implemented"}))))}})
       (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e})))))
+
+;; TODO
+;; FUNCTION: get-power-stats-t
+;;    EXAMPLE: (get-power-stats-t "ns50.bullx" nil nil)
+(defn get-power-stats-t ""
+  [host t1 t2]
+  (ring-resp/response
+    (try
+      (let [metrics-for-host  (remove nil?
+                                (for [[k v] @MONITORED-HOSTS-SERIES]
+                                  (when (some #(= host %) v) k)))
+            instances-per-metric  (into {}
+                                    (for [x metrics-for-host]
+                                      {x (get-in @HOSTS-TAGS-INSTANCES [x host])}))]
+        {:power-stats
+          { host
+            (into {}
+              (remove nil?
+                (for [[k v] instances-per-metric]
+                  (cond
+                    ;; NVIDIA probes
+                    (= k config/SERIE-NVIDIA-GPUs)  (into {}
+                                                      (for [i (range 0 v)]
+                                                        { (keyword (str "gpu" i))
+                                                          [:max   (extract-result-t1t2 k host i "max" t1 t2)
+                                                           :min   (extract-result-t1t2 k host i "min" t1 t2)
+                                                           :mean  (extract-result-t1t2 k host i "mean" t1 t2)]}))
+                    ;; Others: not implemented
+                    :else                           {k "not implemented"}))))}})
+      (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e})))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ADAPTER INFO:
+;;    Example:    getInfo()
+;;    Response:   "info" : {
+;;                  "monitored-hosts": ["ns50.bullx", "ns51.bullx", "ns54.bullx", "ns55.bullx", "ns56.bullx"]
+;;                  "ns50.bullx" : {
+;;                    "has_accelerator" : true,
+;;                    "has-gpu" : true,
+;;                    "gpu-name" : "NVIDIA",
+;;                    "gpu-count" : 2,
+;;                    "gpu1" : {
+;;                      "current-power" : 25.123123,
+;;                      ...
+;;                    }
+;;                    "cpu1" : {
+;;                      "cpu-spot-usage" : 25
+;;                    }
+;;
+;;                    //Power and energy
+;;                    public static final String POWER_KPI_NAME = "power";
+;;                    public static final String ESTIMATED_POWER_KPI_NAME = "power-estimated";
+;;                    public static final String ENERGY_KPI_NAME = "energy";
+;;                    //Utilisation Metrics
+;;                    public static final String CPU_SPOT_USAGE_KPI_NAME = "cpu-measured";
+;;                    //Plus any similar ones for the GPU.
+;;                    //applications metrics
+;;                    public static final String APPS_ALLOCATED_TO_HOST_COUNT = "app_on_host_count";
+;;                    public static final String APPS_RUNNING_ON_HOST_COUNT = "app_on_host_count";
+;;                    public static final String APPS_STATUS = "application_status";
+;;                    //accelerators
+;;                    public static final String HAS_ACCELERATOR = "has_accelerator";
+;;                    public static final String HAS_GPU = "has_gpu";
+;;                    public static final String GPU_NAME = "gpu_name";
+;;                    public static final String GPU_COUNT = "gpu_count";
+;;                    public static final String GPU_USED = "gpu_used";
+;;                    public static final String HAS_MIC = "has_many_integrated_core";
+;;                    public static final String MIC_NAME = "mic_name";
+;;                    public static final String MIC_COUNT = "mic_count";
+;;                    public static final String MIC_USED = "mic_used";
+;;
+;;                  }
+;;                  ...
+;;                }
+
+;; SELECT value, instance FROM cpu_value WHERE host = 'ns50.bullx' AND type_instance<>'idle' AND time > now() - 1d
+;; SELECT last(value), instance FROM cpu_value WHERE host = 'ns50.bullx' AND type_instance<>'idle' AND time > now() - 1d GROUP BY instance
+
+;; mean, min, max for each instance in a period of time
+;; SELECT mean(value), max(value), min(value) FROM cpu_value WHERE host = 'ns50.bullx' AND type_instance<>'idle' AND time > now() - 1d GROUP BY instance
+
+;; last 2 values for each instance:
+;; SELECT value FROM cpu_value WHERE host = 'ns50.bullx' AND type_instance<>'idle' GROUP BY instance ORDER BY DESC LIMIT 2
+
+;; SELECT last(value) FROM cpu_value WHERE host = 'ns50.bullx' AND type_instance<>'idle' GROUP BY instance
+
+;; FUNCTION:
+(defn- get-CPU-PLUGIN-lastval-node-v2 ""
+  [metric node]
+  (try
+    (let [response  (json/read-str
+                      ((let [query  (str "SELECT last(value) FROM " metric " WHERE host = '" node "' "
+                                         "AND type_instance<>'idle' GROUP BY instance;")]
+                        (common/GET (str (config/get-influxdb-api) "/query?db=" (config/get-db) "&q=" query))) :body)
+                      :key-fn keyword)]
+      {:res "SUCCESS" :response response})
+    (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e}))))
+
+;; FUNCTION:
+(defn- get-CPU-PLUGIN-aggrvals-node-v2 ""
+  [metric node t]
+  (try
+    (let [response  (json/read-str
+                      ((let [query  (str "SELECT mean(value), max(value), min(value) FROM " metric " WHERE host = '" node "' "
+                                         "AND type_instance<>'idle' AND time > now() - " t " GROUP BY instance;")]
+                        (common/GET (str (config/get-influxdb-api) "/query?db=" (config/get-db) "&q=" query))) :body)
+                      :key-fn keyword)]
+      {:res "SUCCESS" :response response})
+    (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e}))))
+
+
+;; FUNCTION: gen-info-NVIDIA
+(defn- gen-info-NVIDIA "Generates info map for NVIDIA measurements of a given host"
+  [h]
+  (when (some #(= h %) ((deref MONITORED-HOSTS-SERIES) config/SERIE-NVIDIA-GPUs))
+    { :HAS_ACCELERATOR  true
+      :HAS_GPU          true
+      :GPU_NAME         "NVIDIA"
+      :GPU_COUNT        (get-in (deref HOSTS-TAGS-INSTANCES) [config/SERIE-NVIDIA-GPUs h])
+      :GPU_USED         "NOT_IMPLEMENTED"
+      :GPU {
+        :GPU1 {
+          :POWER_LAST_VALUE     "NOT_IMPLEMENTED"
+          :POWER_LAST_VALUE_T   "NOT_IMPLEMENTED"} ;;  TODO complete function - nvidia power
+        :GPU2 {
+          :POWER_LAST_VALUE     "NOT_IMPLEMENTED"
+          :POWER_LAST_VALUE_T   "NOT_IMPLEMENTED"} ;;  TODO complete function - nvidia power
+      }}))
+
+;; FUNCTION: gen-info-CPU
+(defn- gen-info-CPU "Gets CPU usage info or the selected host. Returns empty map if any error / exception is found / thrown"
+  [h t]
+  (try
+    (when (some #(= h %) ((deref MONITORED-HOSTS-SERIES) config/SERIE-CPU-PLUGIN))
+      (into {}
+        (let [res-last-val-series ((first (get-in (get-CPU-PLUGIN-lastval-node-v2 config/SERIE-CPU-PLUGIN h) [:response :results])) :series)
+              res-aggr-val-series ((first (get-in (get-CPU-PLUGIN-aggrvals-node-v2 config/SERIE-CPU-PLUGIN h t) [:response :results])) :series)]
+          (for [x res-last-val-series]
+            (let [instance            (get-in x [:tags :instance])
+                  data-last-instance  ((first (filter #(= instance (get-in % [:tags :instance])) res-last-val-series)) :values)
+                  data-aggr-instance  ((first (filter #(= instance (get-in % [:tags :instance])) res-aggr-val-series)) :values)]
+              {(keyword (str "cpu" instance))
+                { :CPU_USAGE_LAST_T       (ffirst data-last-instance)
+                  :CPU_USAGE_LAST_VALUE   (common/round-number (second (first data-last-instance)) :precision 3)
+                  ;:cpu-usage-aggr-time   (ffirst data-aggr-instance)
+                  :CPU_USAGE_MEAN_VALUE   (common/round-number (second (first data-aggr-instance)) :precision 3)
+                  :CPU_USAGE_MAX_VALUE    (common/round-number (nth (first data-aggr-instance) 2) :precision 3)
+                  :CPU_USAGE_MIN_VALUE    (common/round-number (last (first data-aggr-instance)) :precision 3)}})))))
+    (catch Exception e (do
+                        (logs/log-error e)
+                        (logs/log-error {:host h :res "ERROR in [gen-info-CPU]"})
+                        (logs/log-debug {:host h :res "ERROR in [gen-info-CPU]" :error e}) {}))))
+
+;; FUNCTION: get-info-stats
+;;    EXAMPLE: (get-info-stats)
+(defn get-info-stats ""
+  [t]
+  (ring-resp/response
+    (try
+      {:monitored_hosts (deref MONITORED-HOSTS)
+       :hosts_info (into {}
+                     (for [host (deref MONITORED-HOSTS)]
+                       (let [ ;;accelerators: NVIDIA/GPUs
+                              res-info-NVIDIA (if-let [res (gen-info-NVIDIA host)]
+                                                res
+                                                { :HAS_ACCELERATOR  false
+                                                  :HAS_GPU          false
+                                                  :GPU_NAME         ""
+                                                  :GPU_COUNT        0
+                                                  :GPU_USED         "NOT_IMPLEMENTED"})
+                              ;; CPU
+                              res-info-CPU    (if-let [res (gen-info-CPU host t)]
+                                                {:CPU_USAGE res}
+                                                {:CPU_USAGE ""})
+                              ;; applications metrics:
+                              res-apps        {:APPS_ALLOCATED_TO_HOST_COUNT  "NOT_IMPLEMENTED"
+                                               :APPS_RUNNING_ON_HOST_COUNT    "NOT_IMPLEMENTED"
+                                               :APPS_STATUS                   "NOT_IMPLEMENTED"}
+                              ;; accelerators: MICS
+                              res-mics        {:APPS_ALLOCATED_TO_HOST_COUNT  "NOT_IMPLEMENTED"
+                                               :APPS_RUNNING_ON_HOST_COUNT    "NOT_IMPLEMENTED"
+                                               :APPS_STATUS                   "NOT_IMPLEMENTED"}]
+                         {host (merge res-info-NVIDIA res-info-CPU res-apps res-mics)})))}
+      (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e})))))
+
+
+
+;(get-info-stats "2d")
+
+;(gen-info-CPU "ns50.bullx" "2d")
+
+
+
+
+
+
+
+
+
+;; SELECT last(value) FROM monitoring_value GROUP BY host, type_instance
+
+
+;; SELECT value FROM cpu_value WHERE type_instance<>'idle' GROUP BY instance, host ORDER BY DESC LIMIT 1
+;; SELECT mean(value), max(value), min(value) FROM cpu_value WHERE type_instance<>'idle' AND time > now() - 1d GROUP BY instance, host
+
+
+;; FUNCTION: get-aggregated-values-cpu-plugin
+(defn- get-aggregated-values-cpu-plugin ""
+  [metric time]
+  (try
+    (let [response  (json/read-str
+                      ((let [query  (str "SELECT mean(value), max(value), min(value) FROM " metric " WHERE "
+                                         "type_instance<>'idle' AND time > now() - " time " GROUP BY instance, host;")]
+                        (common/GET (str (config/get-influxdb-api) "/query?db=" (config/get-db) "&q=" query))) :body)
+                      :key-fn keyword)]
+      {:res "SUCCESS" :response response})
+    (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e}))))
+
+;; FUNCTION: parse-host-aggr-data
+(defn- parse-host-aggr-data "Returns map with cpu info of a host"
+  [host host-data]
+  {:cpu
+    (into {}
+      (for [x host-data]
+        { (keyword (str "cpu" (get-in x [:tags :instance]))) {
+          ;:time     (ffirst (x :values))
+          :mean     (common/round-number (second (first (x :values))) :precision 3)
+          :max      (common/round-number (nth (first (x :values)) 2) :precision 3)
+          :min      (common/round-number (last (first (x :values))) :precision 3)}}))})
+
+;; FUNCTION: get-last-values-cpu-plugin
+(defn- get-last-values-cpu-plugin ""
+  [metric]
+  (try
+    (let [response  (json/read-str
+                      ((let [query  (str "SELECT last(value) FROM " metric " WHERE "
+                                         "type_instance<>'idle' GROUP BY instance, host;")]
+                        (common/GET (str (config/get-influxdb-api) "/query?db=" (config/get-db) "&q=" query))) :body)
+                      :key-fn keyword)]
+      {:res "SUCCESS" :response response})
+    (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e}))))
+
+;; FUNCTION: parse-host-last-data
+(defn- parse-host-last-data "Returns map with cpu info of a host"
+  [host host-data]
+  {:cpu
+    (into {}
+      (for [x host-data]
+        { (keyword (str "cpu" (get-in x [:tags :instance]))) {
+          ;:time     (ffirst (x :values))
+          :last     (common/round-number (second (first (x :values))) :precision 3)}}))})
+
+;; FUNCTION: parse-response
+(defn- parse-response "Returns a vector with all results from response"
+  [response]
+  ((first (get-in response [:response :results])) :series))
+
+
+;; SELECT mean(value), max(value), min(value) FROM monitoring_value WHERE time > now() - 1d GROUP BY instance, host
+
+(defn- get-NVIDIA-PLUGIN-aggrvals-allnodes ""
+  [metric]
+  (try
+    (let [response  (json/read-str
+                      ((let [query  (str "SELECT mean(value), max(value), min(value) FROM " metric " WHERE "
+                                         "time > now() - 1d GROUP BY instance, host;")]
+                        (common/GET (str (config/get-influxdb-api) "/query?db=" (config/get-db) "&q=" query))) :body)
+                      :key-fn keyword)]
+      {:res "SUCCESS" :response response})
+    (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e}))))
+;;SELECT last(value) FROM monitoring_value GROUP BY instance, host
+
+;(get-NVIDIA-PLUGIN-aggrvals-allnodes "monitoring_value")
+
+
+
+;; FUNCTION: gen-info-CPU
+;; (gen-info-CPU "ns50.bullx")
+(defn- gen-resp-CPU "Gets CPU usage info or the selected host. Returns empty map if any error / exception is found / thrown"
+  [data-res-cpu host]
+  (try
+    (if (> (count data-res-cpu) 0)
+      (let [data (first data-res-cpu)]
+        (for [x data]
+          (let [instance            (get-in x [:tags :instance])
+                data-aggr-instance  ((first (filter #(= instance (get-in % [:tags :instance])) data)) :values)]
+            {(keyword (str "cpu" instance))
+              { :cpu-usage-last-time        ""
+                :cpu-usage-last-value       ""
+                :cpu-usage-aggr-time        (ffirst data-aggr-instance)
+                :cpu-usage-aggr-mean-value  (common/round-number (second (first data-aggr-instance)) :precision 3)
+                :cpu-usage-aggr-max-value   (common/round-number (nth (first data-aggr-instance) 2) :precision 3)
+                :cpu-usage-aggr-min-value   (common/round-number (last (first data-aggr-instance)) :precision 3)}})))
+      {})
+    (catch Exception e (do  (logs/log-error e)
+                            (logs/log-error {:host host :res "ERROR in [gen-info-CPU]"})
+                            (logs/log-debug {:host host :res "ERROR in [gen-info-CPU]" :error e}) {}))))
+
+
+
+;; FUNCTION: gen-info-NVIDIA
+(defn- gen-resp-NVIDIA ""
+  [data-res-nvidia host]
+  (if (> (count data-res-nvidia) 0)
+    { :has_accelerator true
+      :has-gpu true
+      :gpu-name "NVIDIA"
+      :gpu-count (get-in (deref HOSTS-TAGS-INSTANCES) [config/SERIE-NVIDIA-GPUs host])}
+    {}))
+
+
+(defn- gen-resp-CPU "Gets CPU usage info or the selected host. Returns empty map if any error / exception is found / thrown"
+  [data-res-cpu host]
+  (try
+    (if (> (count data-res-cpu) 0)
+      (for [x (apply list data-res-cpu)]
+        {:x x})
+      {})
+    (catch Exception e (do  (logs/log-error e)
+                            (logs/log-error {:host host :res "ERROR in [gen-info-CPU]"})
+                            (logs/log-debug {:host host :res "ERROR in [gen-info-CPU]" :error e}) {}))))

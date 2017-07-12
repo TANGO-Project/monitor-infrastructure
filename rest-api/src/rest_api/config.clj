@@ -39,6 +39,10 @@
 (def APP-VERSION (conf :version))
 (def ^:private INFLUXDB-API (atom (conf :influxdb-api)))
 (def ^:private DB (atom (conf :db)))
+(def monitored-series (conf :monitored-series))
+;; Collectd plugins
+(def SERIE-NVIDIA-GPUs (monitored-series :NVIDIA-GPUs))
+(def SERIE-CPU-PLUGIN (monitored-series :CPU-PLUGIN))
 
 ;; FUNCTION: get-INFLUXDB-API
 (defn get-influxdb-api "" [] (deref INFLUXDB-API))
