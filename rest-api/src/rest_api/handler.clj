@@ -33,7 +33,9 @@
       (GET  "/monitored/series"           {headers :headers}                                  (api-funcs/get-MONITORED-SERIES))
       (GET  "/monitored/hosts-series"     {headers :headers}                                  (api-funcs/get-MONITORED-HOSTS-SERIES))
       ;; INFO: used by
-      (GET  "/info-stats/:t"              {{t :t} :params, headers :headers}                  (api-funcs/get-info-stats t))
+      (GET  "/info-stats"                 {headers :headers}                                  (api-funcs/get-info-stats))
+      ;; TODO replace t value with config/TAKE-LAST-T
+      (GET  "/info-stats-with-avg"        {{t :t} :params, headers :headers}                  (api-funcs/get-info-stats-with-avg "4d"))
       ;; POWER-STATS: used by Programming Model Component
       (GET  "/power-stats/:h/:t"          {{h :h t :t} :params, headers :headers}             (api-funcs/get-power-stats h t nil))
       (GET  "/power-stats/:h/:t1/:t2"     {{h :h t1 :t1 t2 :t2} :params, headers :headers}    (api-funcs/get-power-stats-t h t1 t2))))

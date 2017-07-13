@@ -16,8 +16,15 @@
 (def ^:private default-configuration {
   :name         "Monitoring infrastructure REST API"
   :version      "0.1.0"
-  :influxdb-api "http://192.168.252.41:8086"
-  :db           "collectd"})
+  :influxdb-api "http://192.168.252.2:8086"
+  :db           "collectd"
+  ;; names assigned in Collectd / plugins to the different components / series
+  :monitored-series {
+    :NVIDIA-GPUs  "monitoring_value"   ; NVIDIA plugin that collects 'power'
+    :CPU-PLUGIN   "cpu_value"          ; CPU plugin that collects 'usage' and more metrics...
+  }
+  ;; interval / time for averages (in queries)
+  :take-last-t    "30s"})
 
 ;; read configuration values into map
 (defn- read-configuration [path]
@@ -43,6 +50,8 @@
 ;; Collectd plugins
 (def SERIE-NVIDIA-GPUs (monitored-series :NVIDIA-GPUs))
 (def SERIE-CPU-PLUGIN (monitored-series :CPU-PLUGIN))
+;; t
+(def TAKE-LAST-T (monitored-series :take-last-t))
 
 ;; FUNCTION: get-INFLUXDB-API
 (defn get-influxdb-api "" [] (deref INFLUXDB-API))

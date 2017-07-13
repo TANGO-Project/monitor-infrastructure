@@ -11,4 +11,6 @@
     :NVIDIA-GPUs  "monitoring_value"   ; NVIDIA plugin that collects 'power'
     :CPU-PLUGIN   "cpu_value"          ; CPU plugin that collects 'usage' and more metrics...
   }
+  ;; interval / time for averages (in queries)
+  :take-last-t "30s"
 }
