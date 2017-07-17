@@ -165,3 +165,25 @@ Error:
 	printf("------------------------------------------------------------\n");
 	return 0;
 }
+
+/*
+	OUTPUT:
+	
+	------------------------------------------------------------
+	[-] Initialize NVML library ...
+	> NVML initialization > elapsed time: 5.00 seconds.
+	[-] nvmlDeviceGetCount
+	> Found 2 devices
+	> [0]. device: [Tesla M2075], pci.busId: [0000:02:00.0]
+	>>> Processes [1] 0
+	>>> Utilization: gpu=0, gmem=0
+	>>> power=78.209999 Watts
+	> [1]. device: [Tesla M2075], pci.busId: [0000:83:00.0]
+	>>> Processes [1] 0
+	>>> Utilization: gpu=0, gmem=0
+	>>> power=79.290001 Watts
+	[-] NVML shutdown ...
+	------------------------------------------------------------
+
+*/
+
