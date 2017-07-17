@@ -5,14 +5,14 @@
 
 int main(void) {
 	nvmlReturn_t result;
-	unsigned int device_count, i;
+	unsigned int device_count, i, j;
 	// elapsed time
 	time_t start,end;
 	double dif;
 
 	// 1- Initialize NVML library
 	printf("------------------------------------------------------------\n");
-	printf("[1] Initialize NVML library ...\n");
+	printf("[-] Initialize NVML library ...\n");
 	time(&start);
 
 	result = nvmlInit();
@@ -28,7 +28,7 @@ int main(void) {
 	printf("> NVML initialization > elapsed time: %.2lf seconds.\n", dif );
 
 	// 2- Get total nvidia devices
-	printf("[2] nvmlDeviceGetCount\n");
+	printf("[-] nvmlDeviceGetCount\n");
 	result = nvmlDeviceGetCount(&device_count);
 	if (NVML_SUCCESS != result) {
 		printf("Failed to query device count: %s\n", nvmlErrorString(result));
@@ -39,7 +39,6 @@ int main(void) {
 	printf("> Found %d device%s\n", device_count, device_count != 1 ? "s" : "");
 
 	// 3- List found devices
-	printf("[3] Devices found ... \n");
 	for (i = 0; i < device_count; i++) {
 		nvmlDevice_t device;
 		char name[NVML_DEVICE_NAME_BUFFER_SIZE];
@@ -49,6 +48,9 @@ int main(void) {
 		unsigned int *power;
 		unsigned ipower = 1;
 		power = &ipower;
+		nvmlUtilization_t nvmlUtilization = { 0 };
+		unsigned int num_procs = 32;
+		nvmlProcessInfo_t procs[32];
 
 		// Query for device handle to perform operations on a device
 		// You can also query device handle by other features like:
@@ -59,7 +61,7 @@ int main(void) {
 			printf("Failed to get handle for device %i: %s\n", i, nvmlErrorString(result));
 			goto Error;
 		}
-
+		
 		result = nvmlDeviceGetName(device, name, NVML_DEVICE_NAME_BUFFER_SIZE);
 		if (NVML_SUCCESS != result) {
 			printf("Failed to get name of device %i: %s\n", i, nvmlErrorString(result));
@@ -74,7 +76,48 @@ int main(void) {
 			goto Error;
 		}
 		printf("> [%d]. device: [%s], pci.busId: [%s]\n", i, name, pci.busId);
-
+		
+		/***************************************************************************************/
+		/* RUNNING PROCESSES */
+		// nvmlReturn_t nvmlDeviceGetComputeRunningProcesses (nvmlDevice_t device, unsigned int *infoCount, nvmlProcessInfo_t *infos)
+		/*
+			This function returns information only about compute running processes (e.g. CUDA
+			application which have active context). Any graphics applications (e.g. using OpenGL,
+			DirectX) won't be listed by this function.
+		*/
+		result = (nvmlReturn_t) nvmlDeviceGetComputeRunningProcesses(device, &num_procs, procs);
+		if (NVML_SUCCESS != result) {
+			printf("ERROR: %s\n", nvmlErrorString(result));
+			goto Error;
+		} else {
+			printf(">>> Processes [1] %i \n", num_procs);
+		}
+		
+		// nvmlReturn_t nvmlDeviceGetGraphicsRunningProcesses (nvmlDevice_t device, unsigned int *infoCount, nvmlProcessInfo_t *infos)
+		/*
+			This function returns information only about graphics based processes (eg. applications
+			using OpenGL, DirectX)
+		*/
+		/*result = (nvmlReturn_t) nvmlDeviceGetGraphicsRunningProcesses(device, &num_procs, procs);
+		if (NVML_SUCCESS != result) {
+			printf("ERROR: %s\n", nvmlErrorString(result));
+			goto Error;
+		} else {
+			printf(">>> Processes [2] %i \n", num_procs);
+		}*/
+		
+		/***************************************************************************************/
+		/* UTILIZATION & MEMORY */
+		result = (nvmlReturn_t) nvmlDeviceGetUtilizationRates(device, &nvmlUtilization);
+		if (NVML_SUCCESS != result) {
+			printf("ERROR: %s\n", nvmlErrorString(result));
+			goto Error;
+		} else {
+			printf(">>> Utilization: gpu=%u, gmem=%u \n", nvmlUtilization.gpu, nvmlUtilization.memory);
+		}
+		
+		/***************************************************************************************/
+		/* POWER */
 		/*
 		 * nvmlReturn_t DECLDIR nvmlDeviceGetPowerUsage (nvmlDevice_t device, unsigned int* power)
 		 *		URL: http://developer.download.nvidia.com/assets/cuda/files/CUDADownloads/NVML/nvml.pdf
@@ -90,19 +133,18 @@ int main(void) {
 		 * The reading is accurate to within a range of +/- 5 watts. It is only available if power management mode is supported
 		 *
 		 */
-		result = (nvmlReturn_t)nvmlDeviceGetPowerUsage(device, power);
+		result = (nvmlReturn_t) nvmlDeviceGetPowerUsage(device, power);
 		if (NVML_SUCCESS != result) {
 			printf("ERROR: %s\n", nvmlErrorString(result));
 			goto Error;
-		}
-		else {
+		} else {
 			totalWatts = *power / 1000.0;
-			printf(">> power: %f Watts\n", totalWatts);
+			printf(">>> power=%f Watts\n", totalWatts);
 		}
 	}
 
 	//
-	printf("[4] NVML shutdown ...\n");
+	printf("[-] NVML shutdown ...\n");
 
 	result = nvmlShutdown();
 	if (NVML_SUCCESS != result)
