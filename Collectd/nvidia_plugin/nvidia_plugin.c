@@ -99,7 +99,9 @@ static int my_init(void) {
 
 
 /*
- * This is a utility function used by the read callback to populate a value_list_t and pass it to plugin_dispatch_values.
+ * submitPower:
+ * 	This is a utility function used by the read callback to populate a value_list_t
+ * 	and pass it to plugin_dispatch_values.
  */
 static int submitPower(gauge_t value, unsigned int deviceIndex) {
 	char strDeviceIndex[8];
@@ -148,6 +150,52 @@ static int submitPower(gauge_t value, unsigned int deviceIndex) {
 
 
 /*
+ * submitUtilization
+ */
+static int submitUtilization(gauge_t value, unsigned int deviceIndex) {
+	char strDeviceIndex[8];
+	value_list_t vl = VALUE_LIST_INIT;
+
+	vl.values = &(value_t) { .gauge = value }; /* Convert the gauge_t to a value_t and add it to the value_list_t. */
+	vl.values_len = 1;
+
+	sprintf(strDeviceIndex, "%d", deviceIndex);
+
+	sstrncpy(vl.host, hostname_g, sizeof (vl.host));
+	sstrncpy(vl.plugin, "monitoring", sizeof (vl.plugin));
+	sstrncpy(vl.plugin_instance, "nvidia", sizeof (vl.plugin_instance)); // <<<<<
+	sstrncpy(vl.type, "utilization", sizeof (vl.type));
+	sstrncpy(vl.type_instance, strDeviceIndex, sizeof (vl.type_instance));
+
+	/* dispatch the values to collectd which passes them on to all registered write functions */
+	return plugin_dispatch_values(&vl);
+}
+
+
+/*
+ * submitRunningProcesses
+ */
+static int submitRunningProcesses(gauge_t value, unsigned int deviceIndex) {
+	char strDeviceIndex[8];
+	value_list_t vl = VALUE_LIST_INIT;
+
+	vl.values = &(value_t) { .gauge = value }; /* Convert the gauge_t to a value_t and add it to the value_list_t. */
+	vl.values_len = 1;
+
+	sprintf(strDeviceIndex, "%d", deviceIndex);
+
+	sstrncpy(vl.host, hostname_g, sizeof (vl.host));
+	sstrncpy(vl.plugin, "monitoring", sizeof (vl.plugin));
+	sstrncpy(vl.plugin_instance, "nvidia", sizeof (vl.plugin_instance)); // <<<<<
+	sstrncpy(vl.type, "processes", sizeof (vl.type));
+	sstrncpy(vl.type_instance, strDeviceIndex, sizeof (vl.type_instance));
+
+	/* dispatch the values to collectd which passes them on to all registered write functions */
+	return plugin_dispatch_values(&vl);
+}
+
+
+/*
  * This function is called in regular intervalls to collect the data.
  */
 static int my_read (void) {
@@ -171,6 +219,9 @@ static int my_read (void) {
 		unsigned int *power;
 		unsigned ipower = 1;
 		power = &ipower;
+		nvmlUtilization_t nvmlUtilization = { 0 };
+		unsigned int num_procs = 32;
+		nvmlProcessInfo_t procs[32];
 
 		// Query for device handle to perform operations on a device
 		// You can also query device handle by other features like:
@@ -199,9 +250,11 @@ static int my_read (void) {
 			return 0;
 		}
 
-		/*
-		 * The reading is accurate to within a range of +/- 5 watts. It is only available if power management mode is supported
-		 */
+		/***************************************************************************************
+		 * POWER:
+		 * 	The reading is accurate to within a range of +/- 5 watts. It is only available if
+		 *	power management mode is supported
+		 ***************************************************************************************/
 		result = (nvmlReturn_t)nvmlDeviceGetPowerUsage(device, power);
 		if (NVML_SUCCESS != result) {
 			printf("ERROR: %s\n", nvmlErrorString(result));
@@ -212,11 +265,49 @@ static int my_read (void) {
 			totalWatts = *power / 1000.0;
 			printf(">> power: %f Watts\n", totalWatts);
 
-
 			if (submitPower(totalWatts, i) != 0) {
 				WARNING("nvidia_plugin plugin: Dispatching a value failed.");
 			}
 		}
+
+		/***************************************************************************************
+		 * UTILIZATION & MEMORY:
+		 ***************************************************************************************/
+		result = (nvmlReturn_t) nvmlDeviceGetUtilizationRates(device, &nvmlUtilization);
+		if (NVML_SUCCESS != result) {
+			printf("ERROR: %s\n", nvmlErrorString(result));
+			goto Error;
+		}
+		else {
+			printf(">> utilization: gpu=%u, gmem=%u \n", nvmlUtilization.gpu, nvmlUtilization.memory);
+
+			if (submitUtilization(nvmlUtilization.gpu, i) != 0) {
+				WARNING("nvidia_plugin plugin: Dispatching a value failed.");
+			}
+		}
+
+		/***************************************************************************************
+		 * RUNNING PROCESSES
+		 ***************************************************************************************/
+		// nvmlReturn_t nvmlDeviceGetComputeRunningProcesses (nvmlDevice_t device, unsigned int *infoCount, nvmlProcessInfo_t *infos)
+		/*
+			This function returns information only about compute running processes (e.g. CUDA
+			application which have active context). Any graphics applications (e.g. using OpenGL,
+			DirectX) won't be listed by this function.
+		*/
+		result = (nvmlReturn_t) nvmlDeviceGetComputeRunningProcesses(device, &num_procs, procs);
+		if (NVML_SUCCESS != result) {
+			printf("ERROR: %s\n", nvmlErrorString(result));
+			goto Error;
+		}
+		else {
+			printf(">> running processes [1] %i \n", num_procs);
+
+			if (submitRunningProcesses(num_procs, i) != 0) {
+				WARNING("nvidia_plugin plugin: Dispatching a value failed.");
+			}
+		}
+
 	}
 
 	/* A return value != 0 indicates an error and the plugin will be skipped for an increasing amount of time. */
