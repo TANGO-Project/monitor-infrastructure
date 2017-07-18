@@ -66,23 +66,24 @@ The main purpose of the *REST API* application is to offer to other TANGO compon
 
 ### Installation Guide (ubuntu, 64-bit systems)
 
-##### Requirements
+##### 1. Requirements
 
 - ubuntu 64-bit system
 - Java 8
+- [Leiningen][] 2.0.0 or above installed.
 
-##### 1. Install Collectd
+##### 2. Install Collectd
 
 ```bash
 sudo apt-get update
 sudo apt-get install collectd collectd-utils
 ```
 
-###### 1.1. Install plugins
+###### 2.1. Install plugins
 
 View [Collectd - Readme file](Collectd/README.md) to see how to compile and install the plugins.
 
-##### 2. Install InfluxDB
+##### 3. Install InfluxDB
 
 ```bash
 wget https://dl.influxdata.com/influxdb/releases/influxdb_0.13.0_amd64.deb
@@ -91,7 +92,7 @@ sudo service influxdb start
 sudo service influxdb statu
 ```
 
-##### 3. Install Grafana
+##### 4. Install Grafana
 
 ```bash
 wget https://grafanarel.s3.amazonaws.com/builds/grafana_3.0.4-1464167696_amd64.deb
@@ -99,12 +100,12 @@ sudo apt-get install -y adduser libfontconfig
 sudo dpkg -i grafana_3.0.4-1464167696_amd64.deb
 ```
 
-##### 4. Collectd & InfluxDB & Grafana setup
+##### 5. Collectd & InfluxDB & Grafana setup
 
 See [Monitoring with Collectd, InfluxDB & Grafana](http://www.vishalbiyani.com/graphing-performance-with-collectd-influxdb-grafana/) for more information about how to setup the three components.
 
 
-##### 5. Install and configure the REST API component
+##### 6. Install and configure the REST API component
 
 View [rest-api - Readme file](rest-api/README.md) to see how to install and configure the REST API component.
 
@@ -119,5 +120,7 @@ View [rest-api - Readme file](rest-api/README.md) to see how to install and conf
 The other TANGO components connect to the monitor Infrastructure through the REST API application:
 
 - Programming model
+
+- heterogeneous parallel device clusters
 
 - 
