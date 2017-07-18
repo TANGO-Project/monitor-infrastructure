@@ -70,7 +70,7 @@ The main purpose of the *REST API* application is to offer to other TANGO compon
 
 - ubuntu 64-bit system
 - Java 8
-- [Leiningen][] 2.0.0 or above installed.
+- [Leiningen]() 2.0.0 or above installed.
 
 ##### 2. Install Collectd
 
@@ -113,6 +113,8 @@ View [rest-api - Readme file](rest-api/README.md) to see how to install and conf
 
 ### Usage Guide
 
+...
+
 -----------------------
 
 ### Relation to other TANGO components
@@ -123,4 +125,4 @@ The other TANGO components connect to the monitor Infrastructure through the RES
 
 - heterogeneous parallel device clusters
 
-- 
+- ...
