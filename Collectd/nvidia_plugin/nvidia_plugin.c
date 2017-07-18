@@ -48,38 +48,6 @@
 
 
 /*
- * https://collectd.org/wiki/index.php/Data_source
- *
- * data source definition:
- * - name of the data source
- * - type of the data source (DS_TYPE_GAUGE, DS_TYPE_COUNTER)
- * - minimum allowed value
- * - maximum allowed value
- */
-static data_source_t dsrc[1] =
-{
-	{ "watts", DS_TYPE_GAUGE, 0, NAN }
-};
-
-/*
- * https://collectd.org/wiki/index.php/Data_set
- *
- * data set definition:
- * - name of the data set
- * - number of data sources
- * - list of data sources
- *
- * NOTE: If you're defining a custom data-set, you have to make that known to any servers as well.
- * Else, the server is not able to store values using the type defined by that data-set.
- * It is strongly recommended to use one of the types and data-sets pre-defined in the types.db file.
- */
-static data_set_t ds =
-{
-	"nvidia_plugin", STATIC_ARRAY_SIZE (dsrc), dsrc
-};
-
-
-/*
  * This function is called once upon startup to initialize the plugin.
  */
 static int my_init(void) {
@@ -99,13 +67,12 @@ static int my_init(void) {
 
 
 /*
- * submitPower:
+ * submitValue:
  * 	This is a utility function used by the read callback to populate a value_list_t
  * 	and pass it to plugin_dispatch_values.
  */
-static int submitPower(gauge_t value, unsigned int deviceIndex) {
+static int submitValue(gauge_t value, const char *type, unsigned int deviceIndex) {
 	char strDeviceIndex[8];
-	//char strPlugin[128] = "nvidia";
 	/*
 	 *  value_list_t: https://collectd.org/wiki/index.php/Value_list
 	 *
@@ -139,56 +106,10 @@ static int submitPower(gauge_t value, unsigned int deviceIndex) {
 	sprintf(strDeviceIndex, "%d", deviceIndex);
 
 	sstrncpy(vl.host, hostname_g, sizeof (vl.host));
-	sstrncpy(vl.plugin, "monitoring", sizeof (vl.plugin));
-	sstrncpy(vl.plugin_instance, "nvidia", sizeof (vl.plugin_instance)); // <<<<<
-	sstrncpy(vl.type, "power", sizeof (vl.type));
-	sstrncpy(vl.type_instance, strDeviceIndex, sizeof (vl.type_instance));
-
-	/* dispatch the values to collectd which passes them on to all registered write functions */
-	return plugin_dispatch_values(&vl);
-}
-
-
-/*
- * submitUtilization
- */
-static int submitUtilization(gauge_t value, unsigned int deviceIndex) {
-	char strDeviceIndex[8];
-	value_list_t vl = VALUE_LIST_INIT;
-
-	vl.values = &(value_t) { .gauge = value }; /* Convert the gauge_t to a value_t and add it to the value_list_t. */
-	vl.values_len = 1;
-
-	sprintf(strDeviceIndex, "%d", deviceIndex);
-
-	sstrncpy(vl.host, hostname_g, sizeof (vl.host));
-	sstrncpy(vl.plugin, "monitoring", sizeof (vl.plugin));
-	sstrncpy(vl.plugin_instance, "nvidia", sizeof (vl.plugin_instance)); // <<<<<
-	sstrncpy(vl.type, "utilization", sizeof (vl.type));
-	sstrncpy(vl.type_instance, strDeviceIndex, sizeof (vl.type_instance));
-
-	/* dispatch the values to collectd which passes them on to all registered write functions */
-	return plugin_dispatch_values(&vl);
-}
-
-
-/*
- * submitRunningProcesses
- */
-static int submitRunningProcesses(gauge_t value, unsigned int deviceIndex) {
-	char strDeviceIndex[8];
-	value_list_t vl = VALUE_LIST_INIT;
-
-	vl.values = &(value_t) { .gauge = value }; /* Convert the gauge_t to a value_t and add it to the value_list_t. */
-	vl.values_len = 1;
-
-	sprintf(strDeviceIndex, "%d", deviceIndex);
-
-	sstrncpy(vl.host, hostname_g, sizeof (vl.host));
-	sstrncpy(vl.plugin, "monitoring", sizeof (vl.plugin));
-	sstrncpy(vl.plugin_instance, "nvidia", sizeof (vl.plugin_instance)); // <<<<<
-	sstrncpy(vl.type, "processes", sizeof (vl.type));
-	sstrncpy(vl.type_instance, strDeviceIndex, sizeof (vl.type_instance));
+	sstrncpy(vl.plugin, "nvidia", sizeof (vl.plugin));
+	sstrncpy(vl.plugin_instance, strDeviceIndex, sizeof (vl.plugin_instance));
+	sstrncpy(vl.type, type, sizeof (vl.type));
+	//sstrncpy(vl.type_instance, strDeviceIndex, sizeof (vl.type_instance));
 
 	/* dispatch the values to collectd which passes them on to all registered write functions */
 	return plugin_dispatch_values(&vl);
@@ -200,10 +121,8 @@ static int submitRunningProcesses(gauge_t value, unsigned int deviceIndex) {
  */
 static int my_read (void) {
 	nvmlReturn_t result;
-	//gauge_t value;
 	unsigned int device_count, i;
 
-	/* do the magic to read the data : gauge_t value = random (); */
 	result = nvmlDeviceGetCount(&device_count);
 	if (NVML_SUCCESS != result) {
 		printf("Failed to query device count: %s\n", nvmlErrorString(result));
@@ -265,7 +184,7 @@ static int my_read (void) {
 			totalWatts = *power / 1000.0;
 			printf(">> power: %f Watts\n", totalWatts);
 
-			if (submitPower(totalWatts, i) != 0) {
+			if (submitValue(totalWatts, "power", i) != 0) {
 				WARNING("nvidia_plugin plugin: Dispatching a value failed.");
 			}
 		}
@@ -281,7 +200,11 @@ static int my_read (void) {
 		else {
 			printf(">> utilization: gpu=%u, gmem=%u \n", nvmlUtilization.gpu, nvmlUtilization.memory);
 
-			if (submitUtilization(nvmlUtilization.gpu, i) != 0) {
+			/*
+			 * Use values from 'types.db' (/opt/collectd/share/collectd/types.db) or add a new one:
+			 *		- util  			value:GAUGE:0:U
+			 */
+			if (submitValue(nvmlUtilization.gpu, "util", i) != 0) {
 				WARNING("nvidia_plugin plugin: Dispatching a value failed.");
 			}
 		}
@@ -303,7 +226,11 @@ static int my_read (void) {
 		else {
 			printf(">> running processes [1] %i \n", num_procs);
 
-			if (submitRunningProcesses(num_procs, i) != 0) {
+			/*
+			 * Use values from 'types.db' (/opt/collectd/share/collectd/types.db) or add a new one:
+			 *		- procs  			value:GAUGE:0:U
+			 */
+			if (submitValue(num_procs, "procs", i) != 0) {
 				WARNING("nvidia_plugin plugin: Dispatching a value failed.");
 			}
 		}
@@ -316,30 +243,12 @@ static int my_read (void) {
 
 
 /*
- * This function is called after values have been dispatched to collectd.
- */
- /*
-static int my_write(const data_set_t *ds, const value_list_t *vl, user_data_t *ud) {
-	return 0;
-}
-*/
-
-
-/*
  * This function is called when plugin_log() has been used.
  */
 static void my_log(int severity, const char *msg, user_data_t *ud) {
 	printf("LOG: %i - %s\n", severity, msg);
 	return;
 }
-
-
-/*
- * This function is called when plugin_dispatch_notification () has been used.
- */
-/* static int my_notify(const notification_t *notif, user_data_t *ud) {
-	return 0;
-} */
 
 
 /*
@@ -365,11 +274,8 @@ static int my_shutdown(void) {
  */
 void module_register(void) {
 	plugin_register_log("nvidia_plugin", my_log, /* user data */ NULL);
-	//plugin_register_notification("nvidia_plugin", my_notify, /* user data */ NULL);
-	plugin_register_data_set(&ds);
 	plugin_register_read("nvidia_plugin", my_read);
 	plugin_register_init("nvidia_plugin", my_init);
-	//plugin_register_write("nvidia_plugin", my_write, /* user data */ NULL);
 	plugin_register_shutdown("nvidia_plugin", my_shutdown);
-    return;
+  return;
 }
