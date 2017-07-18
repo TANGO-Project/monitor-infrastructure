@@ -39,11 +39,37 @@ Available collection of probes to measure energy in heterogeneous hardware for t
 
 ### Component architecture
 
+#### Components
+The monitor Infrastructure is composed by the following components:
+
+###### Collectd & plugins
+
+[Collectd](https://collectd.org/) is a daemon which collects system and application performance metrics periodically and provides mechanisms to store the values in a variety of ways. The TANGO Collectd plugins provide metrics from specific devices like the NVIDIA GPUs and the XEON PHI processors. The metrics gathered from this component are stored in the InfluxDB instance.
+
+###### InfluxDB
+
+[InfluxDB](https://www.google.es/#q=influxdb) is used as a data store for the metrics gathered from *Collectd*. The *REST API* and the *Graphana* applications connect to this tool in order to present the processed information.
+
+###### Graphana
+
+[Graphana](https://grafana.com/) is a data visualization and monitoring tool with support for Graphite, *InfluxDB* and many more databases. This component is used as the GUI of the monitoring component.
+
+###### REST API
+
+The main purpose of the *REST API* application is to offer to other TANGO components the information they need from the metrics gathered from *Collectd*.
+
+#### Architecture
+
 ![Component architecture](resources/components-monitor_infr.png)
 
 -----------------------
 
-### Installation Guide
+### Installation Guide (ubuntu, 64-bit systems)
+
+##### Requirements
+
+- ubuntu 64-bit system
+- Java 8
 
 ##### 1. Install Collectd
 
@@ -56,7 +82,7 @@ sudo apt-get install collectd collectd-utils
 
 View [Collectd - Readme file](Collectd/README.md) to see how to compile and install the plugins.
 
-##### 2. Install InfluxDB  (ubuntu, 64-bit systems)
+##### 2. Install InfluxDB
 
 ```bash
 wget https://dl.influxdata.com/influxdb/releases/influxdb_0.13.0_amd64.deb
@@ -89,3 +115,9 @@ View [rest-api - Readme file](rest-api/README.md) to see how to install and conf
 -----------------------
 
 ### Relation to other TANGO components
+
+The other TANGO components connect to the monitor Infrastructure through the REST API application:
+
+- Programming model
+
+- 
