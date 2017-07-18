@@ -32,7 +32,26 @@ cd collectd
 ### Custom plugins
 
 #### Install custom plugin written in C (nvidia_plugin):
-  1. Compile program using src from 'collectd' (git - download).
+
+  1. Create the plugin following the description from [Collectd - Plugin architecture](https://collectd.org/wiki/index.php/Plugin_architecture)
+
+  2. Add new types: If new types are needed then include them in '/opt/collectd/share/collectd/types.db':
+
+```
+absolute		value:ABSOLUTE:0:U
+apache_bytes		value:DERIVE:0:U
+apache_connections	value:GAUGE:0:65535
+...
+vs_threads		value:GAUGE:0:65535
+
+#
+# new types:
+#
+pwer    		value:GAUGE:0:NAN
+util  			value:GAUGE:0:U
+```
+
+  3. Compile the program (plugin) using *src* from 'collectd' (git - download).
 
      For example, compile the *nvidia_plugin* (collectd sources located in /_COLLECTD__SOURCES_, and nvidia library located in /_NVIDIA__LIBS_):
 
@@ -40,20 +59,20 @@ cd collectd
 gcc -DHAVE_CONFIG_H -Wall -Werror -g -O2 -shared -fPIC -I/COLLECTD_SOURCES_/ -I/COLLECTD_SOURCE/daemon/ -lnvidia-ml -LNVIDIA_LIBS/ -ldl -o nvidia_plugin.so nvidia_plugin.c
 ```
 
-  2. Modify permissions and owner
+  4. Modify permissions and owner
 
 ```bash
 sudo chmod 0755 nvidia_plugin.so
 sudo chown -R root:root nvidia_plugin.so
 ```
 
-  3. Copy file in collectd plugins library: /opt/collectd/lib/collectd
+  5. Copy file in collectd plugins library: /opt/collectd/lib/collectd
 
 ```bash
 sudo cp nvidia_plugin.so /opt/collectd/lib/collectd/nvidia_plugin.so
 ```
 
-  4. Edit 'collectd.conf' to enable the nvidia plugin and the CSV plugin (this last one just to see the output from the custom plugin)
+  6. Edit 'collectd.conf' to enable the nvidia plugin and the CSV plugin (this last one just to see the output from the custom plugin)
 
 ```bash
 sudo vi /opt/collectd/etc/collectd.conf
@@ -70,7 +89,7 @@ LoadPlugin csv
 ...
 ```
 
-  5. Start collectd and check errors
+  7. Start collectd
 
 ```bash
 sudo /home/atos/collectd/collectd
