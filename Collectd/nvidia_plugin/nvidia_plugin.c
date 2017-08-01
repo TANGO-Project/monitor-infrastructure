@@ -195,7 +195,7 @@ static int my_read (void) {
 		result = (nvmlReturn_t) nvmlDeviceGetUtilizationRates(device, &nvmlUtilization);
 		if (NVML_SUCCESS != result) {
 			printf("ERROR: %s\n", nvmlErrorString(result));
-			goto Error;
+			return 0;
 		}
 		else {
 			printf(">> utilization: gpu=%u, gmem=%u \n", nvmlUtilization.gpu, nvmlUtilization.memory);
@@ -221,7 +221,7 @@ static int my_read (void) {
 		result = (nvmlReturn_t) nvmlDeviceGetComputeRunningProcesses(device, &num_procs, procs);
 		if (NVML_SUCCESS != result) {
 			printf("ERROR: %s\n", nvmlErrorString(result));
-			goto Error;
+			return 0;
 		}
 		else {
 			printf(">> running processes [1] %i \n", num_procs);
