@@ -252,9 +252,9 @@
                 (for [[k v] instances-per-metric]
                   (cond
                     ;; NVIDIA probes
-                    ;;    "nvidia_value" {"ns50.bullx" 6} ==> 6 / 3 (power, percent, objects)
+                    ;;    "nvidia_value" {"ns50.bullx" 6} ==> 6 / 3 (power, percent, objects): defined in (config/SERIE-NVIDIA-GPUs-total-metrics)
                     (= k config/SERIE-NVIDIA-GPUs)  (into {}
-                                                      (for [i (range 0 (/ v 3))]
+                                                      (for [i (range 0 (/ v config/SERIE-NVIDIA-GPUs-total-metrics))]
                                                         { (keyword (str "gpu" i))
                                                           [:max   (extract-result k host i "max" time)
                                                            :min   (extract-result k host i "min" time)
@@ -282,9 +282,8 @@
                 (for [[k v] instances-per-metric]
                   (cond
                     ;; NVIDIA probes
-                    ;;    "nvidia_value" {"ns50.bullx" 6} ==> 6 / 3 (power, percent, objects)
                     (= k config/SERIE-NVIDIA-GPUs)  (into {}
-                                                      (for [i (range 0 (/ v 3))]
+                                                      (for [i (range 0 (/ v config/SERIE-NVIDIA-GPUs-total-metrics))]
                                                         { (keyword (str "gpu" i))
                                                           (let [query (queries/get-val-node-v2 k host i t1 t2)
                                                                 power-values (queries/values-get-val-node-v2 query "power")
@@ -448,15 +447,23 @@
 ;;    AND time > now() - 1d GROUP BY instance, host
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; FUNCTION: get-gpu-power-values
-(defn- get-gpu-power-values ""
+;; FUNCTION: get-gpu-power-values-v2
+(defn- get-gpu-power-values-v2 ""
   [host]
-  (let [resp ((first (get-in (queries/get-lastval-NVIDIA-PLUGIN config/SERIE-NVIDIA-GPUs host) [:response :results])) :series)]
-    (into {}
-      (for [x resp]
-        {(keyword (str "GPU" (get-in x [:tags :type_instance]))) {
-            :POWER_LAST_VALUE   (common/round-number (second (first (x :values))) :precision 3)
-            :POWER_LAST_VALUE_T (first (first (x :values)))}}))))
+  (let [query-res (queries/get-lastval-NVIDIA-PLUGIN-v2 config/SERIE-NVIDIA-GPUs host)]
+    (if (= "SUCCESS" (query-res :res))
+      (let [total-gpus  (/ (count ((first (get-in query-res [:response :results])) :series)) config/SERIE-NVIDIA-GPUs-total-metrics)]
+        (into {}
+          (for [i (range 0 total-gpus)]
+            (let [res-i-power (queries/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "power" i)
+                  res-i-percent (queries/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "percent" i)
+                  res-i-objects (queries/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "objects" i)]
+              {(keyword (str "GPU" i)) {
+                  :POWER_LAST_VALUE         (common/round-number (second res-i-power) :precision 3)
+                  :USAGE_LAST_VALUE         (common/round-number (second res-i-percent) :precision 3)
+                  :APPS_RUNNING_LAST_VALUE  (common/round-number (second res-i-objects) :precision 3)
+              }}))))
+      nil)))
 
 ;; FUNCTION: gen-info-NVIDIA
 (defn- gen-info-NVIDIA "Generates info map for NVIDIA measurements of a given host"
@@ -465,9 +472,9 @@
     { :HAS_ACCELERATOR  true
       :HAS_GPU          true
       :GPU_NAME         "NVIDIA"
-      :GPU_COUNT        (get-in (deref HOSTS-TAGS-INSTANCES) [config/SERIE-NVIDIA-GPUs h])
+      :GPU_COUNT        (/ (get-in (deref HOSTS-TAGS-INSTANCES) [config/SERIE-NVIDIA-GPUs h]) config/SERIE-NVIDIA-GPUs-total-metrics)
       :GPU_USED         "NOT_IMPLEMENTED"
-      :GPU              (get-gpu-power-values h)}))
+      :GPU              (get-gpu-power-values-v2 h)}))
 
 ;; FUNCTION: gen-map-response-info-NVIDIA
 (defn- gen-map-response-info-NVIDIA "Generates response map with all info"
@@ -493,7 +500,7 @@
                   data-last-instance  ((first (filter #(= instance (get-in % [:tags :instance])) res-last-val-series)) :values)
                   data-aggr-instance  ((first (filter #(= instance (get-in % [:tags :instance])) res-aggr-val-series)) :values)]
               {(keyword (str "cpu" instance))
-                { :CPU_USAGE_LAST_T       (ffirst data-last-instance)
+                { ;:CPU_USAGE_LAST_T       (ffirst data-last-instance)
                   :CPU_USAGE_LAST_VALUE   (common/round-number (second (first data-last-instance)) :precision 3)
                   ;:cpu-usage-aggr-time   (ffirst data-aggr-instance)
                   :CPU_USAGE_MEAN_VALUE   (common/round-number (second (first data-aggr-instance)) :precision 3)
@@ -515,7 +522,7 @@
             (let [instance            (get-in x [:tags :instance])
                   data-last-instance  ((first (filter #(= instance (get-in % [:tags :instance])) res-last-val-series)) :values)]
               {(keyword (str "cpu" instance))
-                { :CPU_USAGE_LAST_T       (ffirst data-last-instance)
+                { ;:CPU_USAGE_LAST_T       (ffirst data-last-instance)
                   :CPU_USAGE_LAST_VALUE   (common/round-number (second (first data-last-instance)) :precision 3)}})))))
     (catch Exception e
       (do (logs/log-error e)
@@ -577,9 +584,15 @@
                          {host (merge res-info-NVIDIA res-info-CPU res-apps res-mics)})))}
       (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e})))))
 
-
-
-(t/date-time 1986 10 14 4 3 27 456)
-(str (t/date-time 1986 10 14 4 3 27 456))
-(l/local-now)
-(str (l/local-now))
+;; FUNCTION: get-info-stats-host
+(defn get-info-stats-host "Gets stats from a monitored hosts"
+  [host]
+  (ring-resp/response
+    (try
+      {:hosts_info (into {}
+                     (let [res-info-NVIDIA (gen-map-response-info-NVIDIA host)            ;; accelerators: NVIDIA/GPUs TODO
+                           res-info-CPU    (gen-map-response-info-CPU host false nil)     ;; CPU
+                           res-apps        (gen-map-response-no-info-APPS)                ;; applications metrics TODO
+                           res-mics        (gen-map-response-no-info-MICS)]               ;; accelerators: MICS TODO
+                       {host (merge res-info-NVIDIA res-info-CPU res-apps res-mics)}))}
+      (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e})))))

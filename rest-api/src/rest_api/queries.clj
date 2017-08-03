@@ -45,8 +45,24 @@
   [metric host]
   (query (str "SELECT last(value) FROM " metric " WHERE host = '" host "' " "GROUP BY type_instance;")))
 
+;; FUNCTION: get-lastval-NVIDIA-PLUGIN-v2
+(defn get-lastval-NVIDIA-PLUGIN-v2 "Get last value from NVIDIA-PLUGIN"
+  [metric host]
+  (query (str "SELECT last(value) FROM " metric " WHERE host = '" host "' " "GROUP BY instance, type;")))
+
+;; FUNCTION: values-get-lastval-NVIDIA-PLUGIN-v2
+(defn values-get-lastval-NVIDIA-PLUGIN-v2 ""
+  [query-res param-metric param-instance]
+  (first ((first (filter  #(and (= (get-in % [:tags :type]) param-metric) (= (get-in % [:tags :instance]) (str param-instance)))
+                          ((first ((query-res :response) :results)) :series))) :values)))
+
 ;; FUNCTION: get-avgvals-CPU-PLUGIN
 (defn get-avgvals-CPU-PLUGIN "Get average values from CPU-PLUGIN and type_instance<>'idle'"
   [metric host t]
   (query (str "SELECT mean(value), max(value), min(value) FROM " metric " WHERE host = '" host "' "
           "AND type_instance<>'idle' AND time > now() - " t " GROUP BY instance;")))
+
+
+
+;(def query-res (query "SELECT last(value) FROM nvidia_value WHERE host = 'ns50.bullx' GROUP BY instance, type;"))
+;(values-get-lastval-NVIDIA-PLUGIN-v2 query-res "power" "0")

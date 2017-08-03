@@ -74,3 +74,7 @@
     (let [scale (Math/pow 10 p)]
       (-> x (* scale) Math/round (/ scale)))
     (Math/round x)))
+
+;; FUNCTION: parse-int
+(defn parse-int [s]
+  (Integer/parseInt (re-find #"\A-?\d+" s)))

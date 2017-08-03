@@ -8,9 +8,11 @@
   :db           "collectd"
   ;; names assigned in Collectd / plugins to the different components / series
   :monitored-series {
-    :NVIDIA-GPUs  "nvidia_value"       ; NVIDIA plugin that collects 'power', 'usage' (percent) and 'running_apps' (objects)
-    :CPU-PLUGIN   "cpu_value"          ; CPU plugin that collects 'usage' and more metrics...
+    :NVIDIA-GPUs  "nvidia_value"        ; NVIDIA plugin that collects 'power', 'usage' (percent) and 'running_apps' (objects)
+    :CPU-PLUGIN   "cpu_value"           ; CPU plugin that collects 'usage' and more metrics...
   }
   ;; interval / time for averages (in queries)
   :take-last-t "30s"
+  ;; total metrics
+  :NVIDIA-GPUs-total-metrics 3          ; "power" (power in Watts) "percent" (usage) "objects" (apps)
 }

@@ -50,6 +50,7 @@
 ;; Collectd plugins
 (def SERIE-NVIDIA-GPUs (monitored-series :NVIDIA-GPUs))
 (def SERIE-CPU-PLUGIN (monitored-series :CPU-PLUGIN))
+(def SERIE-NVIDIA-GPUs-total-metrics (conf :NVIDIA-GPUs-total-metrics))
 ;; t
 (def TAKE-LAST-T (monitored-series :take-last-t))
 
