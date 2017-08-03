@@ -202,9 +202,12 @@ static int my_read (void) {
 
 			/*
 			 * Use values from 'types.db' (/opt/collectd/share/collectd/types.db) or add a new one:
-			 *		- util  			value:GAUGE:0:U
+			 *		- new entry
+			 *				util  			value:GAUGE:0:U
+			 *    - existing entrty:
+			 *				percent     value:GAUGE:0:100.1
 			 */
-			if (submitValue(nvmlUtilization.gpu, "util", i) != 0) {
+			if (submitValue(nvmlUtilization.gpu, "percent", i) != 0) {
 				WARNING("nvidia_plugin plugin: Dispatching a value failed.");
 			}
 		}
@@ -228,9 +231,12 @@ static int my_read (void) {
 
 			/*
 			 * Use values from 'types.db' (/opt/collectd/share/collectd/types.db) or add a new one:
-			 *		- procs  			value:GAUGE:0:U
+			 *		- new entry
+			 *					procs  			value:GAUGE:0:U
+			 * 		- existing entrty:
+			 *					objects     value:GAUGE:0:U
 			 */
-			if (submitValue(num_procs, "procs", i) != 0) {
+			if (submitValue(num_procs, "objects", i) != 0) {
 				WARNING("nvidia_plugin plugin: Dispatching a value failed.");
 			}
 		}
