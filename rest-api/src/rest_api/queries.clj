@@ -61,8 +61,3 @@
   [metric host t]
   (query (str "SELECT mean(value), max(value), min(value) FROM " metric " WHERE host = '" host "' "
           "AND type_instance<>'idle' AND time > now() - " t " GROUP BY instance;")))
-
-
-
-;(def query-res (query "SELECT last(value) FROM nvidia_value WHERE host = 'ns50.bullx' GROUP BY instance, type;"))
-;(values-get-lastval-NVIDIA-PLUGIN-v2 query-res "power" "0")

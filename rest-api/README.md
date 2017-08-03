@@ -208,6 +208,151 @@ Response:
 
 -----------------------
 
+12. Get stats info of a host
+
+```
+GET "/info-stats/:host"
+```
+
+Response:
+
+```json
+{
+	"hosts_info": {
+		"ns50.bullx": {
+			"HAS_GPU": true,
+			"CPU_USAGE": {
+				"cpu0": {
+					"CPU_USAGE_LAST_VALUE": 0.0
+				},
+				"cpu13": {
+					"CPU_USAGE_LAST_VALUE": 0.0
+				},
+				...
+				"cpu1": {
+					"CPU_USAGE_LAST_VALUE": 0.0
+				}
+			},
+			"GPU_USED": "NOT_IMPLEMENTED",
+			"APPS_ALLOCATED_TO_HOST_COUNT": "NOT_IMPLEMENTED",
+			"GPU": {
+				"GPU0": {
+					"POWER_LAST_VALUE": 29.779,
+					"USAGE_LAST_VALUE": 0.0,
+					"APPS_RUNNING_LAST_VALUE": 0.0
+				},
+				"GPU1": {
+					"POWER_LAST_VALUE": 30.29,
+					"USAGE_LAST_VALUE": 0.0,
+					"APPS_RUNNING_LAST_VALUE": 0.0
+				}
+			},
+			"APPS_STATUS": "NOT_IMPLEMENTED",
+			"APPS_RUNNING_ON_HOST_COUNT": "NOT_IMPLEMENTED",
+			"GPU_NAME": "NVIDIA",
+			"GPU_COUNT": 2,
+			"HAS_ACCELERATOR": true
+		}
+	}
+}
+```
+
+-----------------------
+
+13. Get stats info of all hosts
+
+```
+GET "/info-stats"
+```
+
+-----------------------
+
+14. Get stats info (with avergares) of a host
+
+```
+GET "/info-stats-with-avg/:host/:t"
+```
+
+```
+http://localhost:8082/api/info-stats-with-avg/ns50.bullx/30s
+```
+
+Response:
+
+```json
+{
+	"monitored_hosts": ["ns50.bullx", "ns51.bullx", "ns52.bullx", "ns53.bullx", "ns54.bullx", "ns55.bullx", "ns56.bullx", "ns57.bullx"],
+	"hosts_info": {
+		"ns50.bullx": {
+			"HAS_GPU": true,
+			"CPU_USAGE": {
+				"cpu0": {
+					"CPU_USAGE_LAST_VALUE": 0.0,
+					"CPU_USAGE_MEAN_VALUE": 0.0,
+					"CPU_USAGE_MAX_VALUE": 0.0,
+					"CPU_USAGE_MIN_VALUE": 0.0
+				},
+				...
+				"cpu4": {
+					"CPU_USAGE_LAST_VALUE": 0.0,
+					"CPU_USAGE_MEAN_VALUE": 0.007,
+					"CPU_USAGE_MAX_VALUE": 0.1,
+					"CPU_USAGE_MIN_VALUE": 0.0
+				},
+				"cpu11": {
+					"CPU_USAGE_LAST_VALUE": 0.0,
+					"CPU_USAGE_MEAN_VALUE": 0.014,
+					"CPU_USAGE_MAX_VALUE": 0.1,
+					"CPU_USAGE_MIN_VALUE": 0.0
+				},
+				"cpu6": {
+					"CPU_USAGE_LAST_VALUE": 0.0,
+					"CPU_USAGE_MEAN_VALUE": 0.014,
+					"CPU_USAGE_MAX_VALUE": 0.1,
+					"CPU_USAGE_MIN_VALUE": 0.0
+				},
+				...
+				"cpu1": {
+					"CPU_USAGE_LAST_VALUE": 0.0,
+					"CPU_USAGE_MEAN_VALUE": 0.014,
+					"CPU_USAGE_MAX_VALUE": 0.1,
+					"CPU_USAGE_MIN_VALUE": 0.0
+				}
+			},
+			"GPU_USED": "NOT_IMPLEMENTED",
+			"APPS_ALLOCATED_TO_HOST_COUNT": "NOT_IMPLEMENTED",
+			"GPU": {
+				"GPU0": {
+					"POWER_LAST_VALUE": 29.77,
+					"USAGE_LAST_VALUE": 0.0,
+					"APPS_RUNNING_LAST_VALUE": 0.0
+				},
+				"GPU1": {
+					"POWER_LAST_VALUE": 30.29,
+					"USAGE_LAST_VALUE": 0.0,
+					"APPS_RUNNING_LAST_VALUE": 0.0
+				}
+			},
+			"APPS_STATUS": "NOT_IMPLEMENTED",
+			"APPS_RUNNING_ON_HOST_COUNT": "NOT_IMPLEMENTED",
+			"GPU_NAME": "NVIDIA",
+			"GPU_COUNT": 2,
+			"HAS_ACCELERATOR": true
+		}
+	}
+}
+```
+
+-----------------------
+
+15. Get stats info (with avergares) of all hosts
+
+```
+GET "/info-stats-with-avg"
+```
+
+-----------------------
+
 ## License
 
   &copy; Atos 2016

@@ -36,7 +36,7 @@
       (GET  "/info-stats"                 {headers :headers}                                  (api-funcs/get-info-stats))
       (GET  "/info-stats/:h"              {{h :h} :params, headers :headers}                  (api-funcs/get-info-stats-host h))
       (GET  "/info-stats-with-avg"        {{t :t} :params, headers :headers}                  (api-funcs/get-info-stats-with-avg "30s"))
-      (GET  "/info-stats-with-avg/:h"     {{h :h t :t} :params, headers :headers}             (api-funcs/get-info-stats-with-avg "30s"))
+      (GET  "/info-stats-with-avg/:h/:t"  {{h :h t :t} :params, headers :headers}             (api-funcs/get-info-stats-with-avg-host h t))
       ;; POWER-STATS: used by Programming Model Component
       (GET  "/power-stats/:h/:t"          {{h :h t :t} :params, headers :headers}             (api-funcs/get-power-stats h t nil))
       (GET  "/power-stats/:h/:t1/:t2"     {{h :h t1 :t1 t2 :t2} :params, headers :headers}    (api-funcs/get-power-stats-v2 h t1 t2))))

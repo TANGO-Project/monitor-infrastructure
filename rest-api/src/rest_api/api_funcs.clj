@@ -569,6 +569,20 @@
                          {host (merge res-info-NVIDIA res-info-CPU res-apps res-mics)})))}
       (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e})))))
 
+;; FUNCTION: get-info-stats-with-avg
+(defn get-info-stats-with-avg-host "Gets stats (including averages) from all monitored hosts"
+  [host t]
+  (ring-resp/response
+    (try
+      {:monitored_hosts (deref MONITORED-HOSTS)
+       :hosts_info (into {}
+                     (let [res-info-NVIDIA (gen-map-response-info-NVIDIA host)          ;;accelerators: NVIDIA/GPUs TODO
+                           res-info-CPU    (gen-map-response-info-CPU host true t)      ;; CPU
+                           res-apps        (gen-map-response-no-info-APPS)              ;; applications metrics TODO
+                           res-mics        (gen-map-response-no-info-MICS)]             ;; accelerators: MICS TODO
+                       {host (merge res-info-NVIDIA res-info-CPU res-apps res-mics)}))}
+      (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e})))))
+
 ;; FUNCTION: get-info-stats
 (defn get-info-stats "Gets stats from all monitored hosts"
   []
