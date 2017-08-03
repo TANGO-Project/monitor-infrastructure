@@ -38,7 +38,7 @@
       (GET  "/info-stats-with-avg"        {{t :t} :params, headers :headers}                  (api-funcs/get-info-stats-with-avg "4d"))
       ;; POWER-STATS: used by Programming Model Component
       (GET  "/power-stats/:h/:t"          {{h :h t :t} :params, headers :headers}             (api-funcs/get-power-stats h t nil))
-      (GET  "/power-stats/:h/:t1/:t2"     {{h :h t1 :t1 t2 :t2} :params, headers :headers}    (api-funcs/get-power-stats-t h t1 t2))))
+      (GET  "/power-stats/:h/:t1/:t2"     {{h :h t1 :t1 t2 :t2} :params, headers :headers}    (api-funcs/get-power-stats-v2 h t1 t2))))
   ; routes
   (route/resources "/")
   (route/not-found (response/response {:message "-Route not found-"})))

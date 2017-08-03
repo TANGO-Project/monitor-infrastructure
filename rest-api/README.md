@@ -150,6 +150,64 @@ Response:
 
 -----------------------
 
+11. Get the power stats of a host
+
+```
+GET "/power-stats/:host/:t1/:t2"
+```
+
+```
+http://localhost:8082/api/power-stats/ns50.bullx/2016-08-02T00:00:00Z/2017-08-03T00:00:00Z
+```
+
+Response:
+
+```json
+{
+	"power-stats": {
+		"ns50.bullx": {
+			"cpu_value": "not implemented",
+			"gpu0": {
+				"power": {
+					"mean": 29.79611899425668,
+					"min": 29.663000106811523,
+					"max": 57.42399978637695
+				},
+				"usage": {
+					"mean": 0,
+					"min": 0,
+					"max": 0
+				},
+				"apps": {
+					"mean": 0,
+					"min": 0,
+					"max": 0
+				}
+			},
+			"gpu1": {
+				"power": {
+					"mean": 30.316579741364194,
+					"min": 30.19300079345703,
+					"max": 61.058998107910156
+				},
+				"usage": {
+					"mean": 0.014404852160727824,
+					"min": 0,
+					"max": 76
+				},
+				"apps": {
+					"mean": 0,
+					"min": 0,
+					"max": 0
+				}
+			}
+		}
+	}
+}
+```
+
+-----------------------
+
 ## License
 
   &copy; Atos 2016

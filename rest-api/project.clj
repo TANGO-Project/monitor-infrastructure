@@ -23,6 +23,7 @@
                                   javax.jms/jms
                                   com.sun.jdmk/jmxtools
                                   com.sun.jmx/jmxri]]
+                  [clj-time "0.14.0"]                   ; MIT License ; https://github.com/clj-time/clj-time
                   [org.clojure/data.json "0.2.6"]       ; Eclipse Public License - Version 1.0  https://github.com/clojure/data.json
                   [proto-repl "0.3.1"]]
   :plugins [[lein-ring "0.12.0"]

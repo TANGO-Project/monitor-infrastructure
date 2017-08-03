@@ -15,16 +15,25 @@
     (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e}))))
 
 ;; FUNCTION: get-val-node
+;; EXAMPLE: (get-val-node "nvidia_value" "max" "ns50.bullx" 0 "5m")
 (defn get-val-node ""
   [metric metric-value node instance time-period]
   (query (str "SELECT " metric-value "(value) FROM " metric " WHERE host = '" node "' "
-              "AND type_instance = '" instance "' AND time > now() - " time-period ";")))
+              "AND type = '" instance "' AND time > now() - " time-period ";")))
 
-;; TODO FUNCTION: get-val-node-between-t1t2
-(defn get-val-node-between-t1t2 ""
-  [metric metric-value node instance t1 t2]
-  (query (str "SELECT " metric-value "(value) FROM " metric " WHERE host = '" node "' "
-              "AND type_instance = '" instance "' AND time > now() - " t1 ";")))
+;; FUNCTION: get-val-node-v2
+;; type = objects, percent, power
+;; instance = 0, 1
+;; EXAMPLE: (get-val-node-v2 "nvidia_value" "ns50.bullx" "0" "2017-08-02T00:00:00Z" "2017-08-03T00:00:00Z")
+(defn get-val-node-v2 ""
+  [metric node instance t1 t2]
+  (query (str "SELECT last(value), mean(value), min(value), max(value) FROM " metric " WHERE host = '" node "' "
+              "AND instance = '" instance "' AND time > '" t1 "' AND time < '" t2 "' GROUP BY type;")))
+
+;; FUNCTION: values-get-val-node-v2
+(defn values-get-val-node-v2 ""
+  [query param]
+  (first ((first (filter #(= (get-in % [:tags :type]) param) ((first ((query :response) :results)) :series))) :values)))
 
 ;; FUNCTION: get-lastval-CPU-PLUGIN
 (defn get-lastval-CPU-PLUGIN "Get last value from CPU-PLUGIN and type_instance<>'idle'"

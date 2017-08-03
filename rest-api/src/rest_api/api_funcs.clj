@@ -14,6 +14,8 @@
             [cheshire.core :as cheshire.core]
             [rest-api.logs :as logs]
             [clojure.data.json :as json]
+            [clj-time.core :as t]
+            [clj-time.local :as l]
             [rest-api.queries :as queries]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -138,12 +140,34 @@
 ;; MONITORED TAGS & HOSTS
 (def ^:private MONITORED-HOSTS-SERIES (delay (get-monitored-series-hosts)))
 (defn get-MONITORED-HOSTS-SERIES "" [] (ring-resp/response (deref MONITORED-HOSTS-SERIES)))
+;; get-MONITORED-HOSTS-SERIES result example:
+;;    {:status 200, :headers {}, :body {
+;;        "cpu_value" ["ns50.bullx" "ns51.bullx" "ns52.bullx" "ns53.bullx" "ns54.bullx" "ns55.bullx" "ns56.bullx" "ns57.bullx"],
+;;        "monitoring_value" ["ns50.bullx" "ns51.bullx"],
+;;        "nvidia_value" ["ns50.bullx"],
+;;        "power_value" ["ns50.bullx" "ns51.bullx" "ns55.bullx" "ns56.bullx"]}}
 
 ;; NUMBER OF INSTANCES PER HOST & TAG
 (def ^:private HOSTS-TAGS-INSTANCES
   (delay (into {}
     (for [[k v] @MONITORED-HOSTS-SERIES]
       {k (into {} (get-total-intances k v))}))))
+;; (deref HOSTS-TAGS-INSTANCES) result example:
+;; {"cpu_value" {"ns50.bullx" 16,
+;;               "ns55.bullx" 48,
+;;               "ns56.bullx" 48,
+;;               "ns54.bullx" 48,
+;;               "ns57.bullx" 48,
+;;               "ns52.bullx" 16,
+;;               "ns51.bullx" 16,
+;;               "ns53.bullx" 16},
+;;    "monitoring_value" {"ns50.bullx" 2, "ns51.bullx" 2},
+;;    "nvidia_value" {"ns50.bullx" 6},
+;;    "power_value" {"ns50.bullx" 1,
+;;                   "ns55.bullx" 1,
+;;                   "ns56.bullx" 1,
+;;                   "ns51.bullx" 1}}
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; |PROGRAMMING MODEL| - DATA:
@@ -151,35 +175,61 @@
 ;,      GET  "/power-stats/:h/:t"
 ;;      GET  "/power-stats/:h/:t1/:t2"
 ;;
-;;    Example:    http://URL/api/power-stats/ns50.bullx/120d
-;;                GET /api/power-stats/ns50.bullx/120d
+;;    Example:    http://localhost:8082/api/power-stats/ns50.bullx/2016-08-02T00:00:00Z/2017-08-03T00:00:00Z
+;;                GET /power-stats/:host/:t1/:t2
 ;;    Response:
 ;;    {
 ;;    	"power-stats": {
 ;;    		"ns50.bullx": {
 ;;    			"cpu_value": "not implemented",
-;;    			"gpu0": ["max", 132.07000732421875, "min", 18.545000076293945, "mean", 20.29199461784161],
-;;    			"gpu1": ["max", 126.88400268554688, "min", 18.731000900268555, "mean", 20.319385006528172],
-;;    			"power_value": "not implemented"
+;;    			"gpu0": {
+;;    				"power": {
+;;    					"mean": 29.79611899425668,
+;;    					"min": 29.663000106811523,
+;;    					"max": 57.42399978637695
+;;    				},
+;;    				"usage": {
+;;    					"mean": 0,
+;;    					"min": 0,
+;;    					"max": 0
+;;    				},
+;;    				"apps": {
+;;    					"mean": 0,
+;;    					"min": 0,
+;;    					"max": 0
+;;    				}
+;;    			},
+;;    			"gpu1": {
+;;    				"power": {
+;;    					"mean": 30.316579741364194,
+;;    					"min": 30.19300079345703,
+;;    					"max": 61.058998107910156
+;;    				},
+;;    				"usage": {
+;;    					"mean": 0.014404852160727824,
+;;    					"min": 0,
+;;    					"max": 76
+;;    				},
+;;    				"apps": {
+;;    					"mean": 0,
+;;    					"min": 0,
+;;    					"max": 0
+;;    				}
+;;    			}
 ;;    		}
 ;;    	}
 ;;    }
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; FUNCTION: process-response
 (defn- process-response "" [r] (second (first ((first ((first ((r :response) :results)) :series)) :values))))
 
 ;; FUNCTION: extract-result
+;; EXAMPLE: (extract-result "nvidia_value" "ns50.bullx" 0 "max" "5m")
 (defn- extract-result ""
   [metric host instance type time]
   (let [res (queries/get-val-node metric type host instance time)]
-    (if (= "SUCCESS" (res :res))
-      (process-response res)
-      nil)))
-
-;; FUNCTION: extract-result-t1t2
-(defn- extract-result-t1t2 ""
-  [metric host instance type t1 t2]
-  (let [res (queries/get-val-node-between-t1t2 metric type host instance t1 t2)]
     (if (= "SUCCESS" (res :res))
       (process-response res)
       nil)))
@@ -202,8 +252,9 @@
                 (for [[k v] instances-per-metric]
                   (cond
                     ;; NVIDIA probes
+                    ;;    "nvidia_value" {"ns50.bullx" 6} ==> 6 / 3 (power, percent, objects)
                     (= k config/SERIE-NVIDIA-GPUs)  (into {}
-                                                      (for [i (range 0 v)]
+                                                      (for [i (range 0 (/ v 3))]
                                                         { (keyword (str "gpu" i))
                                                           [:max   (extract-result k host i "max" time)
                                                            :min   (extract-result k host i "min" time)
@@ -212,8 +263,9 @@
                     :else                           {k "not implemented"}))))}})
       (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e})))))
 
-;; TODO FUNCTION: get-power-stats-t
-(defn get-power-stats-t ""
+;; FUNCTION: get-power-stats-v2
+;; EXAMPLE: (get-power-stats-v2 "ns50.bullx" "2016-08-02T00:00:00Z" "2017-08-03T00:00:00Z")
+(defn get-power-stats-v2 ""
   [host t1 t2]
   (ring-resp/response
     (try
@@ -230,14 +282,33 @@
                 (for [[k v] instances-per-metric]
                   (cond
                     ;; NVIDIA probes
+                    ;;    "nvidia_value" {"ns50.bullx" 6} ==> 6 / 3 (power, percent, objects)
                     (= k config/SERIE-NVIDIA-GPUs)  (into {}
-                                                      (for [i (range 0 v)]
+                                                      (for [i (range 0 (/ v 3))]
                                                         { (keyword (str "gpu" i))
-                                                          [:max   (extract-result-t1t2 k host i "max" t1 t2)
-                                                           :min   (extract-result-t1t2 k host i "min" t1 t2)
-                                                           :mean  (extract-result-t1t2 k host i "mean" t1 t2)]}))
+                                                          (let [query (queries/get-val-node-v2 k host i t1 t2)
+                                                                power-values (queries/values-get-val-node-v2 query "power")
+                                                                usage-values (queries/values-get-val-node-v2 query "percent")
+                                                                apps-values (queries/values-get-val-node-v2 query "objects")]
+                                                            {:power
+                                                              {:mean (nth power-values 2)
+                                                               :min (nth power-values 3)
+                                                               :max (last power-values)}
+                                                             :usage
+                                                              {:mean (nth usage-values 2)
+                                                               :min (nth usage-values 3)
+                                                               :max (last usage-values)}
+                                                             :apps
+                                                              {:mean (nth apps-values 2)
+                                                               :min (nth apps-values 3)
+                                                               :max (last apps-values)}
+                                                            })}))
+                    ;;
+                    (= k config/SERIE-CPU-PLUGIN)   {k "not implemented"}
+
                     ;; Others: not implemented
-                    :else                           {k "not implemented"}))))}})
+                    ;:else                           {k "not implemented"}
+                  ))))}})
       (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e})))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -270,13 +341,13 @@
 ;;    			"GPU_USED": "NOT_IMPLEMENTED",
 ;;    			"APPS_ALLOCATED_TO_HOST_COUNT": "NOT_IMPLEMENTED",
 ;;    			"GPU": {
-;;    				"GPU1": {
-;;    					"POWER_LAST_VALUE": "NOT_IMPLEMENTED",
-;;    					"POWER_LAST_VALUE_T": "NOT_IMPLEMENTED"
+;;    				"GPU0": {
+;;    					"POWER_LAST_VALUE": 30.367000579833984,
+;;    					"POWER_LAST_VALUE_T": "2017-07-11T08:49:27.821787597Z"
 ;;    				},
-;;    				"GPU2": {
-;;    					"POWER_LAST_VALUE": "NOT_IMPLEMENTED",
-;;    					"POWER_LAST_VALUE_T": "NOT_IMPLEMENTED"
+;;    				"GPU1": {
+;;    					"POWER_LAST_VALUE": 30.083999633789062,
+;;    					"POWER_LAST_VALUE_T": "2017-07-11T08:49:27.82211157Z"
 ;;    				}
 ;;    			},
 ;;    			"APPS_STATUS": "NOT_IMPLEMENTED",
@@ -291,7 +362,7 @@
 ;;    		...
 ;;    	}
 ;;    }
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Data required:
 ;;     //Power and energy
 ;;     public static final String POWER_KPI_NAME = "power";
@@ -367,6 +438,7 @@
 ;;    SELECT last(value) FROM cpu_value WHERE host = 'ns50.bullx' AND type_instance<>'idle' GROUP
 ;;    BY instance
 ;;
+;;    SELECT last(value) FROM nvidia_value GROUP BY host, type, type_instance
 ;;    SELECT last(value) FROM monitoring_value GROUP BY host, type_instance
 ;;
 ;;    SELECT value FROM cpu_value WHERE type_instance<>'idle' GROUP BY instance, host ORDER BY
@@ -504,3 +576,10 @@
                              res-mics        (gen-map-response-no-info-MICS)]               ;; accelerators: MICS TODO
                          {host (merge res-info-NVIDIA res-info-CPU res-apps res-mics)})))}
       (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e})))))
+
+
+
+(t/date-time 1986 10 14 4 3 27 456)
+(str (t/date-time 1986 10 14 4 3 27 456))
+(l/local-now)
+(str (l/local-now))
