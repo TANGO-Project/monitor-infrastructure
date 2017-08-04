@@ -16,7 +16,8 @@
             [clojure.data.json :as json]
             [clj-time.core :as t]
             [clj-time.local :as l]
-            [rest-api.queries :as queries]))
+            [rest-api.queries :as queries]
+            [rest-api.queries-resp-parser :as queries-resp-parser]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -222,16 +223,13 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; FUNCTION: process-response
-(defn- process-response "" [r] (second (first ((first ((first ((r :response) :results)) :series)) :values))))
-
 ;; FUNCTION: extract-result
 ;; EXAMPLE: (extract-result "nvidia_value" "ns50.bullx" 0 "max" "5m")
 (defn- extract-result ""
   [metric host instance type time]
   (let [res (queries/get-val-node metric type host instance time)]
     (if (= "SUCCESS" (res :res))
-      (process-response res)
+      (queries-resp-parser/process-response-power-stats res)
       nil)))
 
 ;; FUNCTION: get-power-stats
@@ -286,9 +284,9 @@
                                                       (for [i (range 0 (/ v config/SERIE-NVIDIA-GPUs-total-metrics))]
                                                         { (keyword (str "gpu" i))
                                                           (let [query (queries/get-val-node-v2 k host i t1 t2)
-                                                                power-values (queries/values-get-val-node-v2 query "power")
-                                                                usage-values (queries/values-get-val-node-v2 query "percent")
-                                                                apps-values (queries/values-get-val-node-v2 query "objects")]
+                                                                power-values (queries-resp-parser/values-get-val-node-v2 query "power")
+                                                                usage-values (queries-resp-parser/values-get-val-node-v2 query "percent")
+                                                                apps-values (queries-resp-parser/values-get-val-node-v2 query "objects")]
                                                             {:power
                                                               {:mean (nth power-values 2)
                                                                :min (nth power-values 3)
@@ -455,9 +453,9 @@
       (let [total-gpus  (/ (count ((first (get-in query-res [:response :results])) :series)) config/SERIE-NVIDIA-GPUs-total-metrics)]
         (into {}
           (for [i (range 0 total-gpus)]
-            (let [res-i-power (queries/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "power" i)
-                  res-i-percent (queries/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "percent" i)
-                  res-i-objects (queries/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "objects" i)]
+            (let [res-i-power (queries-resp-parser/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "power" i)
+                  res-i-percent (queries-resp-parser/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "percent" i)
+                  res-i-objects (queries-resp-parser/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "objects" i)]
               {(keyword (str "GPU" i)) {
                   :POWER_LAST_VALUE         (common/round-number (second res-i-power) :precision 3)
                   :USAGE_LAST_VALUE         (common/round-number (second res-i-percent) :precision 3)

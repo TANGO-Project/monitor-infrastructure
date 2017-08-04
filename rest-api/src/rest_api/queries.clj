@@ -30,11 +30,6 @@
   (query (str "SELECT last(value), mean(value), min(value), max(value) FROM " metric " WHERE host = '" node "' "
               "AND instance = '" instance "' AND time > '" t1 "' AND time < '" t2 "' GROUP BY type;")))
 
-;; FUNCTION: values-get-val-node-v2
-(defn values-get-val-node-v2 ""
-  [query param]
-  (first ((first (filter #(= (get-in % [:tags :type]) param) ((first ((query :response) :results)) :series))) :values)))
-
 ;; FUNCTION: get-lastval-CPU-PLUGIN
 (defn get-lastval-CPU-PLUGIN "Get last value from CPU-PLUGIN and type_instance<>'idle'"
   [metric host]
@@ -49,12 +44,6 @@
 (defn get-lastval-NVIDIA-PLUGIN-v2 "Get last value from NVIDIA-PLUGIN"
   [metric host]
   (query (str "SELECT last(value) FROM " metric " WHERE host = '" host "' " "GROUP BY instance, type;")))
-
-;; FUNCTION: values-get-lastval-NVIDIA-PLUGIN-v2
-(defn values-get-lastval-NVIDIA-PLUGIN-v2 ""
-  [query-res param-metric param-instance]
-  (first ((first (filter  #(and (= (get-in % [:tags :type]) param-metric) (= (get-in % [:tags :instance]) (str param-instance)))
-                          ((first ((query-res :response) :results)) :series))) :values)))
 
 ;; FUNCTION: get-avgvals-CPU-PLUGIN
 (defn get-avgvals-CPU-PLUGIN "Get average values from CPU-PLUGIN and type_instance<>'idle'"
