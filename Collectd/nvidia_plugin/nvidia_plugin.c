@@ -141,6 +141,7 @@ static int my_read (void) {
 		nvmlUtilization_t nvmlUtilization = { 0 };
 		unsigned int num_procs = 32;
 		nvmlProcessInfo_t procs[32];
+		unsigned int ret = 0;
 
 		// Query for device handle to perform operations on a device
 		// You can also query device handle by other features like:
@@ -176,9 +177,8 @@ static int my_read (void) {
 		 ***************************************************************************************/
 		result = (nvmlReturn_t)nvmlDeviceGetPowerUsage(device, power);
 		if (NVML_SUCCESS != result) {
-			printf("ERROR: %s\n", nvmlErrorString(result));
+			printf(">> ERROR [nvmlDeviceGetPowerUsage]: %s\n", nvmlErrorString(result));
 			plugin_log(LOG_WARNING, "Failed to get power usage");
-			return 0;
 		}
 		else {
 			totalWatts = *power / 1000.0;
@@ -194,8 +194,7 @@ static int my_read (void) {
 		 ***************************************************************************************/
 		result = (nvmlReturn_t) nvmlDeviceGetUtilizationRates(device, &nvmlUtilization);
 		if (NVML_SUCCESS != result) {
-			printf("ERROR: %s\n", nvmlErrorString(result));
-			return 0;
+			printf(">> ERROR [nvmlDeviceGetUtilizationRates]: %s\n", nvmlErrorString(result));
 		}
 		else {
 			printf(">> utilization: gpu=%u, gmem=%u \n", nvmlUtilization.gpu, nvmlUtilization.memory);
@@ -208,26 +207,55 @@ static int my_read (void) {
 			 *				percent     value:GAUGE:0:100.1
 			 */
 			if (submitValue(nvmlUtilization.gpu, "percent", i) != 0) {
-				WARNING("nvidia_plugin plugin: Dispatching a value failed.");
+				WARNING("nvidia_plugin plugin: Dispatching a value [percent] failed.");
+			}
+
+			if (submitValue(nvmlUtilization.memory, "memory", i) != 0) {
+				WARNING("nvidia_plugin plugin: Dispatching a value [memory] failed.");
 			}
 		}
 
 		/***************************************************************************************
+		 * TODO MEMORY: https://docs.nvidia.com/deploy/nvml-api/structnvmlMemory__t.html#structnvmlMemory__t
+		 ***************************************************************************************/
+		// nvmlReturn_t nvmlDeviceGetMemoryInfo (nvmlDevice_t device, nvmlMemory_t *memory)
+
+		/***************************************************************************************
+		 * TEMPERATURE
+		 ***************************************************************************************/
+		/*
+			 nvmlReturn_t nvmlDeviceGetTemperature (nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int *temp)
+
+			 Retrieves the current temperature readings for the device, in degrees C
+		 */
+		result = (nvmlReturn_t) nvmlDeviceGetTemperature(device, NVML_TEMPERATURE_GPU, &ret);
+  	if (NVML_SUCCESS != result) {
+  		printf(">> ERROR [nvmlDeviceGetTemperature]: %s\n", nvmlErrorString(result));
+  	}
+  	else {
+  		printf(">> temperature: %d \n", ret);
+
+			// temperature
+			if (submitValue(ret, "temperature", i) != 0) {
+				WARNING("nvidia_plugin plugin: Dispatching a value failed.");
+			}
+ 		}
+
+		/***************************************************************************************
 		 * RUNNING PROCESSES
 		 ***************************************************************************************/
-		// nvmlReturn_t nvmlDeviceGetComputeRunningProcesses (nvmlDevice_t device, unsigned int *infoCount, nvmlProcessInfo_t *infos)
 		/*
-			This function returns information only about compute running processes (e.g. CUDA
-			application which have active context). Any graphics applications (e.g. using OpenGL,
-			DirectX) won't be listed by this function.
+			nvmlReturn_t nvmlDeviceGetComputeRunningProcesses (nvmlDevice_t device, unsigned int *infoCount, nvmlProcessInfo_t *infos)
+
+			This function returns information only about compute running processes (e.g. CUDA application which have active context).
+			Any graphics applications (e.g. using OpenGL, DirectX) won't be listed by this function.
 		*/
 		result = (nvmlReturn_t) nvmlDeviceGetComputeRunningProcesses(device, &num_procs, procs);
 		if (NVML_SUCCESS != result) {
-			printf("ERROR: %s\n", nvmlErrorString(result));
-			return 0;
+			printf(">> ERROR [nvmlDeviceGetComputeRunningProcesses]: %s\n", nvmlErrorString(result));
 		}
 		else {
-			printf(">> running processes [1] %i \n", num_procs);
+			printf(">> running processes: %i \n", num_procs);
 
 			/*
 			 * Use values from 'types.db' (/opt/collectd/share/collectd/types.db) or add a new one:
@@ -241,6 +269,30 @@ static int my_read (void) {
 			}
 		}
 
+		/*
+			nvmlReturn_t nvmlDeviceGetGraphicsRunningProcesses (nvmlDevice_t device, unsigned int *infoCount, nvmlProcessInfo_t *infos)
+
+			This function returns information only about graphics based processes (eg. applications using OpenGL, DirectX)
+
+		 */
+		 result = (nvmlReturn_t) nvmlDeviceGetGraphicsRunningProcesses(device, &num_procs, procs);
+		 if (NVML_SUCCESS != result) {
+		 	printf(">> ERROR [nvmlDeviceGetGraphicsRunningProcesses]: %s\n", nvmlErrorString(result));
+		 }
+		 else {
+		 	printf(">> running grph processes: %i \n", num_procs);
+
+		 	/*
+		 	 * Use values from 'types.db' (/opt/collectd/share/collectd/types.db) or add a new one:
+		 	 *		- new entry
+		 	 *					gprocs  		value:GAUGE:0:U
+		 	 * 		- existing entrty:
+		 	 *					threads     value:GAUGE:0:U
+		 	 */
+		 	if (submitValue(num_procs, "threads", i) != 0) {
+		 		WARNING("nvidia_plugin plugin: Dispatching a value failed.");
+		 	}
+		 }
 	}
 
 	/* A return value != 0 indicates an error and the plugin will be skipped for an increasing amount of time. */
