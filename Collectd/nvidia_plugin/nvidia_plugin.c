@@ -52,18 +52,19 @@
  * This function is called once upon startup to initialize the plugin.
  */
 static int my_init(void) {
-		nvmlReturn_t result;
+	nvmlReturn_t result;
 
-		/* open sockets, initialize data structures, ... */
-		result = nvmlInit();
-		if (NVML_SUCCESS != result) {
-				printf("Failed to initialize NVML: %s\n", nvmlErrorString(result));
-				plugin_log(LOG_WARNING, "Failed to initialize NVML");
-				return -1;
-		}
+	/* open sockets, initialize data structures, ... */
+	result = nvmlInit();
+	if (NVML_SUCCESS != result) {
+			printf("Failed to initialize NVML: %s\n", nvmlErrorString(result));
+			plugin_log(LOG_WARNING, "Failed to initialize NVML");
+			return -1;
+	}
 
-		/* A return value != 0 indicates an error and causes the plugin to be disabled. */
-  	return 0;
+	/* A return value != 0 indicates an error and causes the plugin to be disabled. */
+  return 0;
+	
 }
 
 
