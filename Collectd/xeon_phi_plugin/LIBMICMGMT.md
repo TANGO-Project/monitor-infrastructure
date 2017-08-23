@@ -562,7 +562,7 @@ int *mic_free_uos_pm_config*(struct mic_uos_pm_config *pm_config);
 
 In order to access an Intel(R) Xeon Phi(TM) Coprocessor it must first be opened by a call to *mic_open_device()*. +
 
-int *mic_open_device*(struct mic_device **device, uint32_t device_num); +
+#### int *mic_open_device*(struct mic_device **device, uint32_t device_num); +
 
 The input *device_num* argument must contain the device number *<n>* as it appears in the */sys/class/mic/mic<n>* entry on a Linux machine or in the WMI entry <board_id> for the coprocessor to be accessed on a Microsoft Windows machine. A list of available coprocessors may also be obtained by making a call to *mic_get_devices()*.
 

@@ -63,8 +63,7 @@ static int my_init(void) {
 	}
 
 	/* A return value != 0 indicates an error and causes the plugin to be disabled. */
-  return 0;
-	
+	return 0;
 }
 
 
