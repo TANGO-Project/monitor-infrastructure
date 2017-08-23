@@ -26,6 +26,8 @@ Further, Intel disclaims all liability of any kind, including but not limited to
   - [Power Utilization Information](#power-utilization-information)
   - [Memory Utilization](#memory-utilization)
 - [DESCRIPTION](#description)
+  - [Memory Information Functions](#memory-information-functions)
+  - [Processor Information Functions](#processor-information-functions)
 - [COPYRIGHT](#copyright)
 
 -----------------------------
@@ -57,7 +59,7 @@ int *mic_get_device_at_index*(struct mic_devices_list *devices, int index, int *
 
 #### Open Close Coprocessor ####
 
-```
+```c
 int *mic_open_device*(struct mic_device **device, uint32_t device_num);
 
 int *mic_close_device*(struct mic_device *device);
@@ -65,7 +67,7 @@ int *mic_close_device*(struct mic_device *device);
 
 #### Driver Information ####
 
-```
+```c
 int *mic_get_device_type*(struct mic_device *device, uint32_t *type);
 
 const char **mic_get_device_name*(struct mic_device *device);
@@ -75,7 +77,7 @@ int *mic_get_sysfs_attribute*(struct mic_device *device, const char *name, char 
 
 #### Error Reporting ####
 
-```
+```c
 const char **mic_get_error_string*(void);
 
 int *mic_clear_error_string*(void);
@@ -87,7 +89,7 @@ const char **mic_get_ras_error_string*(int ras_errno);
 
 #### Query/modify Coprocessor State ####
 
-```
+```c
 int *mic_enter_maint_mode*(struct mic_device *device);
 
 int *mic_leave_maint_mode*(struct mic_device *device);
@@ -101,7 +103,7 @@ int *mic_get_post_code*(struct mic_device *device, char *post_code, size_t *size
 
 #### Flash Operations ####
 
-```
+```c
 int *mic_flash_size*(struct mic_device *device, size_t *size); +
 
 int *mic_flash_active_offs*(struct mic_device *device, off_t *active); +
@@ -135,7 +137,7 @@ int *mic_get_flash_vendor_device*(struct mic_device *device, char *buf, size_t *
 
 #### PCI Configuration Parameters ####
 
-```
+```c
 int *mic_get_pci_config*(struct mic_device *device, struct mic_pci_config **conf); +
 
 int *mic_free_pci_config*(struct mic_pci_config *conf); +
@@ -167,7 +169,7 @@ int *mic_get_pci_domain_id*(struct mic_pci_config *conf, uint16_t *domain);+
 
 #### Memory Information ####
 
-```
+```c
 int *mic_get_memory_info*(struct mic_device *device, struct mic_device_mem **mem_info); +
 
 int *mic_free_memory_info*(struct mic_device_mem *mem_info); +
@@ -193,7 +195,7 @@ int *mic_get_ecc_mode*(struct mic_device_mem *mem_info, uint16_t *mode); +
 
 #### Processor Information ####
 
-```
+```c
 int *mic_get_processor_info*(struct mic_device *device, struct mic_processor_info **proc_info); +
 
 int *mic_free_processor_info*(struct mic_processor_info *proc_info); +
@@ -211,7 +213,7 @@ int *mic_get_processor_stepping*(struct mic_processor_info *proc_info, char *ste
 
 #### Coprocessor OS Information ####
 
-```
+```c
 int *mic_get_cores_info*(struct mic_device *device, struct mic_cores_info **cores_info); +
 
 int *mic_free_cores_info*(struct mic_cores_info *cores_info); +
@@ -255,7 +257,7 @@ int *mic_get_threads_core*(struct mic_core_util *cutil, uint16_t *threads_core);
 
 #### Thermal Information ####
 
-```
+```c
 int *mic_get_thermal_info*(struct mic_device *device, struct mic_thermal_info **thermal);
 
 int *mic_free_thermal_info*(struct mic_thermal_info *thermal); +
@@ -305,7 +307,7 @@ int *mic_get_fan_pwm*(struct mic_thermal_info *thermal, uint32_t *pwm); +
 
 #### Version Information ####
 
-```
+```c
 int *mic_get_version_info*(struct mic_device *device, struct mic_version_info **version);
 
 int *mic_free_version_info*(struct mic_version_info *version);
@@ -319,19 +321,19 @@ int *mic_get_fsc_strap*(struct mic_version_info *version, char *strap, size_t *s
 
 #### SKU Information ####
 
-```
+```c
 int *mic_get_silicon_sku*(struct mic_device *device, char *sku, size_t *size);
 ```
 
 #### Serial Number ####
 
-```
+```c
 int *mic_get_serial_number*(struct mic_device *device, char *serial, size_t *size);
 ```
 
 #### Power Utilization Information ####
 
-```
+```c
 int *mic_get_power_utilization_info*(struct mic_device *device, struct mic_power_util_info **power_info);
 
 int *mic_free_power_utilization_info*(struct mic_power_util_info *power_info);
@@ -403,7 +405,7 @@ int *mic_get_vddq_voltage_sensor_sts*(struct mic_power_util_info *power_info, ui
 
 #### Memory Utilization ####
 
-```
+```c
 int *mic_get_memory_utilization_info*(struct mic_device *device, struct mic_memory_util_info **memory);
 
 int *mic_get_total_memory_size*(struct mic_memory_util_info *memory, uint32_t *total_size);
@@ -417,7 +419,7 @@ int *mic_free_memory_utilization_info*(struct mic_memory_util_info *memory);
 
 #### Power Limits ####
 
-```
+```c
 int *mic_get_power_limit*(struct mic_device *device, struct mic_power_limit **limit);
 
 int *mic_get_power_phys_limit*(struct mic_power_limit *limit, uint32_t *phys_lim);
@@ -439,7 +441,7 @@ int *mic_free_power_limit*(struct mic_power_limit *limit);
 
 #### Throttle State ####
 
-```
+```c
 int *mic_get_throttle_state_info*(struct mic_device *device, struct mic_throttle_state_info **ttl_state);
 
 int *mic_get_thermal_ttl_active*(struct mic_throttle_state_info *ttl_state, int *active);
@@ -463,7 +465,7 @@ int *mic_free_throttle_state_info*(struct mic_throttle_state_info *ttl_state);
 
 #### Turbo State ####
 
-```
+```c
 int *mic_get_turbo_state_info*(struct mic_device *device, struct mic_turbo_info **turbo);
 
 int *mic_get_turbo_state*(struct mic_turbo_info *turbo, uint32_t *active);
@@ -479,7 +481,7 @@ int *mic_free_turbo_info*(struct mic_turbo_info *turbo);
 
 #### Miscellaneous ####
 
-```
+```c
 int *mic_get_led_alert*(struct mic_device *device, uint32_t *led_alert);
 
 int *mic_set_led_alert*(struct mic_device *device, uint32_t *led_alert);
@@ -495,7 +497,7 @@ int *mic_set_smc_persistence_flag*(struct mic_device *device, int persist_flag);
 
 #### Coprocessor OS Power Management Configuration ####
 
-```
+```c
 int *mic_get_uos_pm_config*(struct mic_device *mdh, struct mic_uos_pm_config **pm_config);
 
 int *mic_get_cpufreq_mode*(struct mic_uos_pm_config *pm_config, int *mode);
@@ -1060,7 +1062,8 @@ more than *size* bytes will be written to the buffer, including the nul terminat
 
 This function returns the 16-bit PCI domain id in *uint16_t *domain.
 
------------------------------
+
+### Memory Information Functions ###
 
 #### int *mic_get_memory_info*(struct mic_device *device, struct mic_device_mem **mem_info);
 
@@ -1169,7 +1172,7 @@ Return if ECC mode is enabled in the associated Intel(R) Xeon Phi(TM)
 coprocessor in *uint16_t *ecc*. A zero value indicates that it is
 disabled; a non-zero value indicates that ECC mode is enabled.
 
------------------------------
+### Processor Information Functions ###
 
 #### int *mic_get_processor_info*(struct mic_device *device, struct mic_processor_info **proc_info);
 
