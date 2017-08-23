@@ -28,6 +28,7 @@ Further, Intel disclaims all liability of any kind, including but not limited to
 - [DESCRIPTION](#description)
   - [Memory Information Functions](#memory-information-functions)
   - [Processor Information Functions](#processor-information-functions)
+  - [Coprocessor OS Information Functions](#coprocessor-os-information-functions)
 - [COPYRIGHT](#copyright)
 
 -----------------------------
@@ -169,6 +170,8 @@ int *mic_get_pci_domain_id*(struct mic_pci_config *conf, uint16_t *domain);+
 
 #### Memory Information ####
 
+View Memory Information [functions](#memory-information-functions) description.
+
 ```c
 int *mic_get_memory_info*(struct mic_device *device, struct mic_device_mem **mem_info); +
 
@@ -195,6 +198,8 @@ int *mic_get_ecc_mode*(struct mic_device_mem *mem_info, uint16_t *mode); +
 
 #### Processor Information ####
 
+View Processor Information [functions](#processor-information-functions) description.
+
 ```c
 int *mic_get_processor_info*(struct mic_device *device, struct mic_processor_info **proc_info); +
 
@@ -212,6 +217,8 @@ int *mic_get_processor_stepping*(struct mic_processor_info *proc_info, char *ste
 ```
 
 #### Coprocessor OS Information ####
+
+View Coprocessor OS Information [functions](#coprocessor-os-information-functions) description.
 
 ```c
 int *mic_get_cores_info*(struct mic_device *device, struct mic_cores_info **cores_info); +
@@ -1062,6 +1069,7 @@ more than *size* bytes will be written to the buffer, including the nul terminat
 
 This function returns the 16-bit PCI domain id in *uint16_t *domain.
 
+-----------------------------
 
 ### Memory Information Functions ###
 
@@ -1172,6 +1180,8 @@ Return if ECC mode is enabled in the associated Intel(R) Xeon Phi(TM)
 coprocessor in *uint16_t *ecc*. A zero value indicates that it is
 disabled; a non-zero value indicates that ECC mode is enabled.
 
+-----------------------------
+
 ### Processor Information Functions ###
 
 #### int *mic_get_processor_info*(struct mic_device *device, struct mic_processor_info **proc_info);
@@ -1258,6 +1268,8 @@ or if the buffer references a NULL or invalid memory location. The
 appropriate *size* value can be queried by setting its value to 0.
 
 -----------------------------
+
+### Coprocessor OS Information Functions ###
 
 #### int *mic_get_cores_info*(struct mic_device *device, struct mic_cores_info **cores_info);
 
