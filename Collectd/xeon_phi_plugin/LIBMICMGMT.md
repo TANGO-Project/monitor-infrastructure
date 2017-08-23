@@ -45,7 +45,7 @@ Further, Intel disclaims all liability of any kind, including but not limited to
 
 #### Identify Available Coprocessors ####
 
-```
+```c
 int *mic_get_devices*(struct mic_devices_list **devices);
 
 int *mic_free_devices*(struct mic_devices_list *devices);
