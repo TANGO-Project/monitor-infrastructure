@@ -50,13 +50,15 @@ int main(void) {
   printf("    Found %d ncards \n", ncards);
 
   for (card_num = 0; card_num < ncards; card_num++) {
-    int card;
+    int card, total_util;
     struct mic_power_util_info *pinfo;
     uint32_t pwr;
     struct mic_memory_util_info *memory;
     uint32_t total_size, avail_size;
     struct mic_thermal_info *thermal;
     uint32_t temp;
+    struct mic_core_util *cutil = NULL;
+    uint64_t idle_sum, sys_sum, nice_sum, user_sum;
 
     printf("    >>\n");
 
@@ -100,13 +102,67 @@ int main(void) {
       (void)mic_free_power_utilization_info(pinfo);
       return 9;
     }
+
     printf("    Instant power reading: %u watts\n", pwr / 1000000);
     (void)mic_free_power_utilization_info(pinfo);
 
     /***************************************************************************************
 		 * UTILIZATION & MEMORY:
-		 ***************************************************************************************/
+          int mic_alloc_core_util(struct mic_core_util **cutil);
 
+          int mic_update_core_util(struct mic_device *device, struct mic_core_util *cutil);
+
+          int mic_get_idle_sum(struct mic_core_util *cutil, uint64_t *idle_sum);
+          int mic_get_sys_sum(struct mic_core_util *cutil, uint64_t *sys_sum);
+          int mic_get_nice_sum(struct mic_core_util *cutil, uint64_t *nice_sum);
+          int mic_get_user_sum(struct mic_core_util *cutil, uint64_t *user_sum);
+
+          int mic_free_core_util(struct mic_core_util *cutil);
+		 ***************************************************************************************/
+    if (mic_alloc_core_util(&cutil) != E_MIC_SUCCESS) {
+      fprintf(stderr, "Error: Failed to allocate Core utilization information: %s\n", mic_get_device_name(mdh));
+      return 10;
+    }
+
+    if (mic_update_core_util(mdh, cutil) != E_MIC_SUCCESS) {
+      fprintf(stderr, "Error: Failed to update Core utilization information: %s\n", mic_get_device_name(mdh));
+      (void)mic_free_core_util(cutil);
+      return 11;
+    }
+
+    if (mic_get_idle_sum(cutil, &idle_sum) != E_MIC_SUCCESS) {
+      fprintf(stderr, "Error: Failed to get the idle sum: %s\n", mic_get_device_name(mdh));
+      (void)mic_free_core_util(cutil);
+      return 12;
+    }
+
+    if (mic_get_nice_sum(cutil, &nice_sum) != E_MIC_SUCCESS) {
+      fprintf(stderr, "Error: Failed to get the nice sum: %s\n", mic_get_device_name(mdh));
+      (void)mic_free_core_util(cutil);
+      return 13;
+    }
+
+    if (mic_get_sys_sum(cutil, &sys_sum) != E_MIC_SUCCESS) {
+      fprintf(stderr, "Error: Failed to get the system sum: %s\n", mic_get_device_name(mdh));
+      (void)mic_free_core_util(cutil);
+      return 14;
+    }
+
+    if (mic_get_user_sum(cutil, &user_sum) != E_MIC_SUCCESS) {
+      fprintf(stderr, "Error: Failed to get the user sum: %s\n", mic_get_device_name(mdh));
+      (void)mic_free_core_util(cutil);
+      return 10;
+    }
+
+    total_util = (int)idle_sum + (int)nice_sum + (int)sys_sum + (int)user_sum;
+
+    printf("    Utilization: \n");
+    printf("     -Idle: %g \n", (((double)idle_sum)/total_util)*100);
+    printf("     -Nice: %g \n", (((double)nice_sum)/total_util)*100);
+    printf("     -System: %g \n", (((double)sys_sum)/total_util)*100);
+    printf("     -User: %g \n", (((double)user_sum)/total_util)*100);
+
+    (void)mic_free_core_util(cutil);
 
     /***************************************************************************************
 		 * MEMORY
@@ -118,7 +174,7 @@ int main(void) {
 		 ***************************************************************************************/
     if (mic_get_memory_utilization_info(mdh, &memory) != E_MIC_SUCCESS) {
       fprintf(stderr, "Error: Failed to get memory utilization information: %s\n", mic_get_device_name(mdh));
-      return 10;
+      return 11;
     }
 
     if (mic_get_total_memory_size(memory, &total_size) != E_MIC_SUCCESS) {
@@ -145,14 +201,15 @@ int main(void) {
  		 ***************************************************************************************/
     if (mic_get_thermal_info(mdh, &thermal) != E_MIC_SUCCESS) {
       fprintf(stderr, "Error: Failed to get thermal information: %s\n", mic_get_device_name(mdh));
-      return 8;
+      return 11;
     }
 
     if (mic_get_die_temp(thermal, &temp) != E_MIC_SUCCESS) {
       fprintf(stderr, "Error: Failed to get instant thermal readings: %s\n", mic_get_device_name(mdh));
       (void)mic_free_thermal_info(thermal);
-      return 9;
+      return 11;
     }
+
     printf("    Instant thermal reading: %u C\n", temp );
     (void)mic_free_thermal_info(thermal);
 
