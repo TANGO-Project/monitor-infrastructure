@@ -29,6 +29,7 @@ Further, Intel disclaims all liability of any kind, including but not limited to
   - [Memory Information Functions](#memory-information-functions)
   - [Processor Information Functions](#processor-information-functions)
   - [Coprocessor OS Information Functions](#coprocessor-os-information-functions)
+  - [Thermal Information Functions](#thermal-information-functions)
 - [COPYRIGHT](#copyright)
 
 -----------------------------
@@ -264,52 +265,54 @@ int *mic_get_threads_core*(struct mic_core_util *cutil, uint16_t *threads_core);
 
 #### Thermal Information ####
 
+View Thermal Information [functions](#thermal-information-functions) description.
+
 ```c
 int *mic_get_thermal_info*(struct mic_device *device, struct mic_thermal_info **thermal);
 
-int *mic_free_thermal_info*(struct mic_thermal_info *thermal); +
+int *mic_free_thermal_info*(struct mic_thermal_info *thermal);
 
-int *mic_get_smc_hwrevision*(struct mic_thermal_info *thermal, char *revision, size_t *size); +
+int *mic_get_smc_hwrevision*(struct mic_thermal_info *thermal, char *revision, size_t *size);
 
-int *mic_get_smc_fwversion*(struct mic_thermal_info *thermal, char *version, size_t *size); +
+int *mic_get_smc_fwversion*(struct mic_thermal_info *thermal, char *version, size_t *size);
 
-int *mic_is_smc_boot_loader_ver_supported*(struct mic_thermal_info *thermal, int *supported); +
+int *mic_is_smc_boot_loader_ver_supported*(struct mic_thermal_info *thermal, int *supported);
 
-int *mic_get_smc_boot_loader_ver*(struct mic_thermal_info *thermal, char *version, size_t *size); +
+int *mic_get_smc_boot_loader_ver*(struct mic_thermal_info *thermal, char *version, size_t *size);
 
-int *mic_get_fsc_status*(struct mic_thermal_info *thermal, uint32_t *status); +
+int *mic_get_fsc_status*(struct mic_thermal_info *thermal, uint32_t *status);
 
-int *mic_get_die_temp*(struct mic_thermal_info *thermal, uint32_t *temp); +
+int *mic_get_die_temp*(struct mic_thermal_info *thermal, uint32_t *temp);
 
-int *mic_is_die_temp_valid*(struct mic_thermal_info *thermal, int *valid); +
+int *mic_is_die_temp_valid*(struct mic_thermal_info *thermal, int *valid);
 
-int *mic_get_gddr_temp*(struct mic_thermal_info *thermal, uint16_t *temp); +
+int *mic_get_gddr_temp*(struct mic_thermal_info *thermal, uint16_t *temp);
 
-int *mic_is_gddr_temp_valid*(struct mic_thermal_info *thermal, int *valid); +
+int *mic_is_gddr_temp_valid*(struct mic_thermal_info *thermal, int *valid);
 
-int *mic_get_fanin_temp*(struct mic_thermal_info *thermal, uint16_t *temp); +
+int *mic_get_fanin_temp*(struct mic_thermal_info *thermal, uint16_t *temp);
 
-int *mic_is_fanin_temp_valid*(struct mic_thermal_info *thermal, int *valid); +
+int *mic_is_fanin_temp_valid*(struct mic_thermal_info *thermal, int *valid);
 
-int *mic_get_fanout_temp*(struct mic_thermal_info *thermal, uint16_t *temp); +
+int *mic_get_fanout_temp*(struct mic_thermal_info *thermal, uint16_t *temp);
 
-int *mic_is_fanout_temp_valid*(struct mic_thermal_info *thermal, int *valid); +
+int *mic_is_fanout_temp_valid*(struct mic_thermal_info *thermal, int *valid);
 
-int *mic_get_vccp_temp*(struct mic_thermal_info *thermal, uint16_t *temp); +
+int *mic_get_vccp_temp*(struct mic_thermal_info *thermal, uint16_t *temp);
 
-int *mic_is_vccp_temp_valid*(struct mic_thermal_info *thermal, int *valid); +
+int *mic_is_vccp_temp_valid*(struct mic_thermal_info *thermal, int *valid);
 
-int *mic_get_vddg_temp*(struct mic_thermal_info *thermal, uint16_t *temp); +
+int *mic_get_vddg_temp*(struct mic_thermal_info *thermal, uint16_t *temp);
 
-int *mic_is_vddg_temp_valid*(struct mic_thermal_info *thermal, int *valid); +
+int *mic_is_vddg_temp_valid*(struct mic_thermal_info *thermal, int *valid);
 
-int *mic_get_vddq_temp*(struct mic_thermal_info *thermal, uint16_t *temp); +
+int *mic_get_vddq_temp*(struct mic_thermal_info *thermal, uint16_t *temp);
 
-int *mic_is_vddq_temp_valid*(struct mic_thermal_info *thermal, int *valid); +
+int *mic_is_vddq_temp_valid*(struct mic_thermal_info *thermal, int *valid);
 
-int *mic_get_fan_rpm*(struct mic_thermal_info *thermal, uint32_t *rpm); +
+int *mic_get_fan_rpm*(struct mic_thermal_info *thermal, uint32_t *rpm);
 
-int *mic_get_fan_pwm*(struct mic_thermal_info *thermal, uint32_t *pwm); +
+int *mic_get_fan_pwm*(struct mic_thermal_info *thermal, uint32_t *pwm);
 ```
 
 #### Version Information ####
@@ -1461,12 +1464,11 @@ int *mic_get_user_sum*(struct mic_core_util *cutil, uint64_t *user_sum); +
 This function returns, in *uint64_t *user_sum*, the aggregate sum of time
 spent in user mode on all threads in the associated coprocessor.
 
-....
-....
+-----------------------------
 
+### Thermal Information Functions ###
 
-int *mic_get_thermal_info*(struct mic_device *device,
-				struct mic_thermal_info **thermal); +
+#### int *mic_get_thermal_info*(struct mic_device *device, struct mic_thermal_info **thermal);
 
 This function returns on-board SMC (System Management Controller), and thermal
 related information of the specified Intel(R) Xeon Phi(TM) coprocessor inside
@@ -1479,21 +1481,16 @@ Note that the use of a handle from a call to *mic_get_thermal_info()* that
 either was not successful, has already been freed, or is one associated with a
 closed coprocessor may result in undetermined behavior.
 
-....
-....
+-----------------------------
 
-
-int *mic_free_thermal_info*(struct mic_thermal_info *thermal); +
+#### int *mic_free_thermal_info*(struct mic_thermal_info *thermal);
 
 This function frees the resources allocated by a previous, successful
 *mic_get_thermal_info()* call.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_smc_hwrevision*(struct mic_thermal_info *thermal, char *revision,
-                           size_t *size); +
+#### int *mic_get_smc_hwrevision*(struct mic_thermal_info *thermal, char *revision, size_t *size);
 
 The SMC hardware revision is returned in the buffer referenced by
 *(char *)revision*. The buffer size is passed in the *size_t *size*
@@ -1504,12 +1501,9 @@ is undetermined if the input size is greater than the actual buffer size, or
 if the buffer references a NULL or invalid memory location. The appropriate *size*
 value can be queried by setting its value to 0
 
-....
-....
+-----------------------------
 
-
-int *mic_get_smc_fwversion*(struct mic_thermal_info *thermal, char *version,
-                          size_t *size); +
+#### int *mic_get_smc_fwversion*(struct mic_thermal_info *thermal, char *version, size_t *size);
 
 The SMC firmware version is returned in the buffer referenced by
 *(char *)version*. The buffer size is passed in the *size_t *size*
@@ -1519,23 +1513,17 @@ input size is greater than the actual buffer size, or if the buffer
 references a NULL or invalid memory location. The appropriate *size* value
 can be queried by setting its value to 0.
 
-....
-....
+-----------------------------
 
-
-int *mic_is_smc_boot_loader_ver_supported*(struct mic_thermal_info *thermal,
-                                         int *supported); +
+#### int *mic_is_smc_boot_loader_ver_supported*(struct mic_thermal_info *thermal, int *supported);
 
 This function returns 0 in *int *supported* if the Boot-loader version is
 not supported by the current SMC firmware on the associated
 Intel(R) Xeon Phi(TM) coprocessor. Otherwise, it is set to a non-zero value.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_smc_boot_loader_ver*(struct mic_thermal_info *thermal,
-			char *version, size_t *size); +
+#### int *mic_get_smc_boot_loader_ver*(struct mic_thermal_info *thermal, char *version, size_t *size);
 
 If it is determined from the *mic_is_smc_boot_loader_ver_supported()* call that
 the SMC Boot-loader version is supported, then this call may be used to retrieve
@@ -1546,166 +1534,136 @@ undetermined if the input size is greater than the actual buffer size, or
 if the buffer references a NULL or invalid memory location. The appropriate
 *size* value can be queried by setting its value to 0.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_fsc_status*(struct mic_thermal_info *thermal, uint32_t *status); +
+#### int *mic_get_fsc_status*(struct mic_thermal_info *thermal, uint32_t *status);
 
 This function returns the Fan Speed Controller status in
 *uint32_t *status*. A value of zero indicates that the controller is off.
 A non-zero value indicates that it is on.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_die_temp*(struct mic_thermal_info *thermal, uint32_t *temp); +
+#### int *mic_get_die_temp*(struct mic_thermal_info *thermal, uint32_t *temp);
 
 This function returns the Die temperature read from a sensor in
 *uint32_t *temp*. The value returned is in degrees Celsius.
 
-....
-....
+-----------------------------
 
-
-int *mic_is_die_temp_valid*(struct mic_thermal_info *thermal, int *valid); +
+#### int *mic_is_die_temp_valid*(struct mic_thermal_info *thermal, int *valid);
 
 This function returns the Die temperature validity flag read from a sensor in
 *uint32_t *valid*. A non-zero value indicates the die temperature is
 valid, and zero indicates that it is not.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_gddr_temp*(struct mic_thermal_info *thermal, uint16_t *temp); +
+#### int *mic_get_gddr_temp*(struct mic_thermal_info *thermal, uint16_t *temp);
 
 This function returns the gddr temperature read from a sensor in
 *uint16_t *temp*. The value returned is in degrees Celsius.
 
-....
-....
+-----------------------------
 
-
-int *mic_is_gddr_temp_valid*(struct mic_thermal_info *thermal, int *valid); +
+#### int *mic_is_gddr_temp_valid*(struct mic_thermal_info *thermal, int *valid);
 
 This function returns the gddr temperature validity flag read from a sensor in
 *uint16_t *valid*. A non-zero value indicates the fan-in temperature is
 valid, and zero indicates that it is not.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_fanin_temp*(struct mic_thermal_info *thermal, uint16_t *temp); +
+#### int *mic_get_fanin_temp*(struct mic_thermal_info *thermal, uint16_t *temp);
 
 This function returns the fan-in temperature read from a sensor in
 *uint16_t *temp*. The value returned is in degrees Celsius.
 
-....
-....
+-----------------------------
 
-
-int *mic_is_fanin_temp_valid*(struct mic_thermal_info *thermal, int *valid); +
+#### int *mic_is_fanin_temp_valid*(struct mic_thermal_info *thermal, int *valid);
 
 This function returns the fan-in temperature validity flag read from a sensor in
 *uint16_t *valid*. A non-zero value indicates the fan-in temperature is
 valid, and zero indicates that it is not.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_fanout_temp*(struct mic_thermal_info *thermal, uint16_t *temp); +
+#### int *mic_get_fanout_temp*(struct mic_thermal_info *thermal, uint16_t *temp);
 
 This function returns the fan-out temperature read from a sensor in
 *uint16_t *temp*. The value returned is in degrees Celsius.
 
-....
-....
+-----------------------------
 
-
-int *mic_is_fanout_temp_valid*(struct mic_thermal_info *thermal, int *valid); +
+#### int *mic_is_fanout_temp_valid*(struct mic_thermal_info *thermal, int *valid);
 
 This function returns the fan-out temperature validity flag read from a sensor
 in *uint16_t *valid*. A non-zero value indicates the fan-out temperature
 is valid, and zero indicates that it is not.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_vccp_temp*(struct mic_thermal_info *thermal, uint16_t *temp); +
+#### int *mic_get_vccp_temp*(struct mic_thermal_info *thermal, uint16_t *temp);
 
 This function returns the vccp (core rail) temperature read from a sensor in
 *uint16_t *temp*. The value returned is in degrees Celsius.
 
-....
-....
+-----------------------------
 
-
-int *mic_is_vccp_temp_valid*(struct mic_thermal_info *thermal, int *valid); +
+#### int *mic_is_vccp_temp_valid*(struct mic_thermal_info *thermal, int *valid);
 
 This function returns the vccp temperature validity flag read from a sensor in
 *uint16_t *valid*. A non-zero value indicates the vccp temperature is
 valid, and zero indicates that it is not.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_vddg_temp*(struct mic_thermal_info *thermal, uint16_t *temp); +
+#### int *mic_get_vddg_temp*(struct mic_thermal_info *thermal, uint16_t *temp);
 
 This function returns the vddg (uncore rail) temperature read from a sensor in
 *uint16_t *temp*. The value returned is in degrees Celsius.
 
-....
-....
+-----------------------------
 
-
-int *mic_is_vddg_temp_valid*(struct mic_thermal_info *thermal, int *valid); +
+#### int *mic_is_vddg_temp_valid*(struct mic_thermal_info *thermal, int *valid);
 
 This function returns the vddg temperature validity flag read from a sensor in
 *uint16_t *valid*. A non-zero value indicates the vddg temperature is
 valid, and zero indicates that it is not.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_vddq_temp*(struct mic_thermal_info *thermal, uint16_t *temp); +
+#### int *mic_get_vddq_temp*(struct mic_thermal_info *thermal, uint16_t *temp);
 
 Return the vddq (memory subsystem rail) temperature read from a sensor in
 *uint16_t *temp*. The value returned is in degrees Celsius.
 
-....
-....
+-----------------------------
 
-
-int *mic_is_vddq_temp_valid*(struct mic_thermal_info *thermal, int *valid); +
+#### int *mic_is_vddq_temp_valid*(struct mic_thermal_info *thermal, int *valid);
 
 This function returns the vddq temperature validity flag read from a sensor in
 *uint16_t *valid*. A non-zero value indicates the vddq temperature is
 valid, and zero indicates that it is not.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_fan_rpm*(struct mic_thermal_info *thermal, uint32_t *rpm); +
+#### int *mic_get_fan_rpm*(struct mic_thermal_info *thermal, uint32_t *rpm);
 
 This accessor function returns the Fan RPM in *uint32_t *rpm.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_fan_pwm*(struct mic_thermal_info *thermal, uint32_t *pwm); +
+#### int *mic_get_fan_pwm*(struct mic_thermal_info *thermal, uint32_t *pwm);
 
 This function returns if Fan PWM is enabled in *uint32_t *pwm. A non-zero
 value indicates that it is enabled, and a value of zero indicates that it is
 not.
+
+-----------------------------
+
+### Other functions ###
 
 ////
 
