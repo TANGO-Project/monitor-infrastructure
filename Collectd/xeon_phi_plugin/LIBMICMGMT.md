@@ -560,7 +560,7 @@ int *mic_free_uos_pm_config*(struct mic_uos_pm_config *pm_config);
 
 ## DESCRIPTION ##
 
-In order to access an Intel(R) Xeon Phi(TM) Coprocessor it must first be opened by a call to *mic_open_device()*. +
+In order to access an Intel(R) Xeon Phi(TM) Coprocessor it must first be opened by a call to *mic_open_device()*.
 
 #### int *mic_open_device*(struct mic_device **device, uint32_t device_num);
 
@@ -570,9 +570,7 @@ The *mic_open_device()* call returns a handle in the *device* argument upon succ
 
 Note that this function, and the library in general, guarantees support of up to 31 concurrent calls to the same coprocessor due to limitations imposed by the coprocessor implementation.
 
-....
-....
-
+-----------------------------
 
 #### int *mic_close_device*(struct mic_device *device);
 
@@ -583,9 +581,7 @@ and releases all resources that were allocated by the corresponding
 a handle that was previously closed, corrupted, or not returned by a
 previous open call.
 
-....
-....
-
+-----------------------------
 
 #### int *mic_get_devices*(struct mic_devices_list **devices);
 
@@ -595,9 +591,7 @@ no longer needed, should be freed by calling *mic_free_devices()*. Accessor
 functions, *mic_get_ndevices()* and *mic_get_device_at_index()*, are available
 to retrieve the individual fields of this list.
 
-....
-....
-
+-----------------------------
 
 #### int *mic_get_ndevices*(struct mic_devices_list *devices, int *ndevices);
 
@@ -621,9 +615,7 @@ structure returned by a previous successful *mic_get_devices()* call that
 was also not freed by *mic_free_devices()*. Otherwise, the behavior of these
 functions is undefined.
 
-....
-....
-
+-----------------------------
 
 #### int *mic_free_devices*(struct mic_devices_list *devices);
 
@@ -631,8 +623,7 @@ This function frees the memory allocated by a previous, successful
 *mic_get_devices()* call that was not already freed. Any other input will result
 in undefined behavior.
 
-....
-....
+-----------------------------
 
 In the following functions, as always, the input *struct mic_device**
 argument must contain a valid value from a *mic_open_device()* call that has not
@@ -642,9 +633,7 @@ Moreover, any error and return value that is unique to a particular function is
 listed in its description. Otherwise, refer to the *RETURN VALUE* section in the
 *mic_open_device()* description for values returned upon success and error.
 
-....
-....
-
+-----------------------------
 
 #### int *mic_get_device_type*(struct mic_device *device, uint32_t *type);
 
@@ -654,9 +643,7 @@ This function returns the type of the Intel(R) Xeon Phi(TM) coprocessor to the
 enumeration that is read from the *family* WMI entry. Currently, the only
 value returned is *KNC_ID*.
 
-....
-....
-
+-----------------------------
 
 #### const char **mic_get_device_name*(struct mic_device *device);
 
@@ -666,9 +653,7 @@ Microsoft Windows, it is the *mic<n>* in *<board_id>* WMI entry. Note that the
 returned string points to a statically allocated memory location that may be
 overwritten by subsequent calls. A value of NULL is returned upon error.
 
-....
-....
-
+-----------------------------
 
 #### int *mic_get_sysfs_attribute*(struct mic_device *device, const char *name, char *value, size_t *size);
 
@@ -682,10 +667,7 @@ buffer, including the nul terminator.
 This function is only supported in Linux; if called in another OS, this
 fuction will return E_MIC_NOT_IMPLEMENTED.
 
-
-....
-....
-
+-----------------------------
 
 #### const char **mic_get_error_string(void);
 
@@ -696,10 +678,9 @@ memory that may be overwritten by subsequent errors encountered by the same
 thread. The *mic_clear_error_string()* function may be used to reset this
 message.
 
-....
-....
+-----------------------------
 
-int *mic_get_ras_errno*(void); +
+#### int *mic_get_ras_errno*(void);
 
 This function returns the latest RAS error number returned by the RAS module
 during the most recent interaction between the RAS module and micmgmt API
@@ -709,20 +690,17 @@ the RAS error number returned by this function is only relevant when the most
 recent API function call returned *E_MIC_RAS_ERROR*.  The RAS error number is
 not guaranteed to be maintained across function calls.
 
-....
-....
+-----------------------------
 
-const char **mic_get_ras_error_string*(int ras_errno); +
+#### const char **mic_get_ras_error_string*(int ras_errno);
 
 This function returns the error string corresponding to the given RAS error
 number (in *ras_errno*).  If the provided RAS error number is out of range,
 NULL will be returned.
 
-....
-....
+-----------------------------
 
-
-int *mic_enter_maint_mode*(struct mic_device *device); +
+#### int *mic_enter_maint_mode*(struct mic_device *device);
 
 The Intel(R) Xeon Phi(TM) coprocessor x100 product family provides a
 maintenance operation mode that allows certain privileged tasks like upgrading
@@ -745,11 +723,9 @@ it is done by writing to the *state* WMI entry. It only returns an error if
 this write fails. To ensure that the switch is successfully completed the state
 must be polled with the *mic_in_maint_mode()* function.
 
-....
-....
+-----------------------------
 
-
-int *mic_in_maint_mode*(struct mic_device *device, int *mode); +
+#### int *mic_in_maint_mode*(struct mic_device *device, int *mode);
 
 This function returns a non-zero value in the *int *mode* argument if
 the specified coprocessor is in maintenance mode, otherwise it is set to 0.
@@ -759,11 +735,9 @@ state is polled by reading the */sys/class/mic/mic<n>/state* and
 */sys/class/mic/mic<n>/mode* files. On Microsoft Windows, the coprocessor state
 is polled by reading the WMI entries *state* and *mode* respectively.
 
-....
-....
+-----------------------------
 
-
-int *mic_leave_maint_mode*(struct mic_device *device); +
+#### int *mic_leave_maint_mode*(struct mic_device *device);
 
 This function may be used to begin transition back to *ready* state from
 maintenance mode for the specified coprocessor. Well behaved applications must
@@ -771,11 +745,9 @@ make sure that it is called after a successful change to maintenance mode. This
 is also an asynchronous operation and the *mic_in_ready_state()* function must
 be polled to check the state of the board.
 
-....
-....
+-----------------------------
 
-
-int *mic_in_ready_state*(struct mic_device *device, int *state); +
+#### int *mic_in_ready_state*(struct mic_device *device, int *state);
 
 A call to *mic_leave_maint_mode()* may be followed by *mic_in_ready_state()*.
 The *int *state* argument is set to a non-zero value if the
@@ -784,8 +756,9 @@ state is returned from the */sys/class/mic/mic<n>/state* file on a Linux machine
 On a Microsoft Windows machine, the board state is returned from the *state*
 WMI entry.
 
+-----------------------------
 
-int *mic_get_post_code*(struct mic_device *device, char *post_code, size_t *size); +
+#### int *mic_get_post_code*(struct mic_device *device, char *post_code, size_t *size);
 
 This functions returns the current POST code of the specified *device*.
 The *size_t *size* argument is an input/output argument. Its input
@@ -797,8 +770,9 @@ references a NULL or invalid memory location. On a Linux machine, the current
 POST code is read from */sys/class/mic/mic<n>/post_code*. On Microsoft Windows,
 the current POST code is read from *post_code* WMI entry.
 
+-----------------------------
 
-int *mic_flash_size*(struct mic_device *device, size_t *size); +
+#### int *mic_flash_size*(struct mic_device *device, size_t *size);
 
 This function may be called to get the flash size in maintenance mode.
 The total flash memory size, in bytes, of the specified coprocessor is returned
@@ -807,11 +781,10 @@ Intel(R) Xeon Phi(TM) coprocessor x100 product family.
 
 The behavior is undetermined if either of the output parameters reference
 NULL or an invalid memory location.
-....
-....
 
+-----------------------------
 
-int *mic_flash_active_offs*(struct mic_device *device, off_t *active); +
+#### int *mic_flash_active_offs*(struct mic_device *device, off_t *active);
 
 In order to recover from a situation where a flash update operation
 may fail, two images are kept in the flash at any time. Upon successful update
@@ -821,11 +794,9 @@ offset is returned in the *off_t *active* argument. On Linux, this value is read
 from */sys/class/mic/mic<n>/fail_safe_offset* file. On Microsoft Windows, this
 value is read from *fail_safe_offset* WMI entry.
 
-....
-....
+-----------------------------
 
-
-int *mic_flash_update_start*(struct mic_device *device, void *buf, size_t bufsize, struct mic_flash_op **desc); +
+#### int *mic_flash_update_start*(struct mic_device *device, void *buf, size_t bufsize, struct mic_flash_op **desc);
 
 This function may be called to write a flash image in maintenance mode.
 *size_t bufsize* bytes referenced by *void *buf* are written to the
@@ -843,11 +814,9 @@ more than once on each device. The behavior of this function is undefined
 if *void *buf* is modified directly at any time after calling *mic_flash_update_start()*,
 or if any of the previous conditions are not met.
 
-....
-....
+-----------------------------
 
-
-int *mic_flash_update_done*(struct mic_flash_op *desc); +
+#### int *mic_flash_update_done*(struct mic_flash_op *desc);
 
 Use *mic_flash_update_done()* to free resources allocated by a previous
 *mic_flash_update_start()* function call. Before calling this function,
@@ -857,12 +826,10 @@ not met.
 
 For additional information see *mic_flash_update_start()* documentation.
 
-....
-....
+-----------------------------
 
-
-int *mic_flash_read_start*(struct mic_device *device, void *buf,
-				size_t bufsize, struct mic_flash_op **desc); +
+#### int *mic_flash_read_start*(struct mic_device *device, void *buf,
+				size_t bufsize, struct mic_flash_op **desc);
 
 This function may be called to read the flash memory in maintenance mode.
 This function reads the first *bufsize* bytes of flash memory of the
@@ -881,11 +848,9 @@ should not be called concurrently more than once on each device. The behavior
 of this function is undefined if *void *buf* is modified directly before calling
 *mic_flash_read_done()*, or if any of the previous conditions are not met.
 
-....
-....
+-----------------------------
 
-
-int *mic_flash_read_done*(struct mic_flash_op *desc); +
+#### int *mic_flash_read_done*(struct mic_flash_op *desc);
 
 Use *mic_flash_read_done()* to free resources allocated by a previous
 *mic_flash_read_start()*. Before calling this function, *mic_get_flash_status_info()* should
@@ -894,12 +859,10 @@ undetermined if any of these conditions are not met.
 
 For additional information see *mic_flash_read_done()* documentation.
 
-....
-....
+-----------------------------
 
-
-int *mic_set_ecc_mode_start*(struct mic_device *mdh, uint16_t ecc_enabled,
-                struct mic_flash_op **desc); +
+#### int *mic_set_ecc_mode_start*(struct mic_device *mdh, uint16_t ecc_enabled,
+                struct mic_flash_op **desc);
 
 This function may be called to set the ECC mode while the coprocessor is in
 "ready" state. Upon successful start of this asynchronous operation, a
@@ -909,21 +872,17 @@ released with *mic_set_ecc_mode_done()* upon completion.
 operation. The host driver *FLASH_CMD_READ* ioctl is used to commence the flash
 read operation.
 
-....
-....
+-----------------------------
 
-
-int *mic_set_ecc_mode_done*(struct mic_flash_op *desc); +
+#### int *mic_set_ecc_mode_done*(struct mic_flash_op *desc);
 
 Use *mic_set_ecc_mode_done()* to free resources allocated by a previous
 *mic_set_ecc_mode_start()* call that have not already been freed. Any
 other input value will result in undetermined behavior.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_flash_status_info*(struct mic_flash_op *desc,
+#### int *mic_get_flash_status_info*(struct mic_flash_op *desc,
 			struct mic_flash_status_info **status_info);
 
 This function may be called to get the flash status in maintenance mode.
@@ -938,31 +897,26 @@ the *mic_free_flash_status_info()* function.
 
 The host driver *FLASH_CMD_STATUS* ioctl is used to monitor the progress.
 
-....
-....
+-----------------------------
 
-
-int *mic_free_flash_status_info*(struct mic_flash_status_info *desc);
+#### int *mic_free_flash_status_info*(struct mic_flash_status_info *desc);
 
 This function frees the valid *struct mic_flash_op *desc* that was
 returned by a previous *mic_get_flash_status_info()* call.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_progress*(struct mic_flash_status_info *desc, uint32_t *progress)
+#### int *mic_get_progress*(struct mic_flash_status_info *desc, uint32_t *progress)
 
 *uint32_t *progress* is set to the progress (in percent) of the Flash
 or SMC operation that returned the *struct mic_flash_op *desc*
 handle that has not been freed. Note that this should be used with the
 *mic_get_status()* call, as it describes the actual operation being performed.
 
-....
-....
+-----------------------------
 
-int *mic_get_status*(struct mic_flash_status_info *status,
-				int *status_val); +
+#### int *mic_get_status*(struct mic_flash_status_info *status,
+				int *status_val);
 
 
 This function returns the Flash or SMC operation in progress inside
@@ -997,12 +951,10 @@ Valid values returned in *uint32_t *status_val* are:
 
 *SMC_OP_AUTH_FAILED* +
 
-....
-....
+-----------------------------
 
-
-int *mic_get_ext_status*(struct mic_flash_status_info *status,
-				int *ext_status); +
+#### int *mic_get_ext_status*(struct mic_flash_status_info *status,
+				int *ext_status);
 
 This function returns the extended status of a failed operation in *uint32_t
 *ext_status*. This should be called only if the status of the
