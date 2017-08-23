@@ -44,6 +44,7 @@
 
 #include <stdio.h>
 
+// NVIDIA //
 #include "nvml.h"
 
 

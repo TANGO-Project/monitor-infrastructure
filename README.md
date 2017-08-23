@@ -28,7 +28,7 @@ The responsibility of this component is twofold. On one side it must provide run
 
 This component relies on [Collectd](https://collectd.org/), which will be used together with some [custom plugins](Collectd) done specifically for TANGO, in order to get and store energy consumption and performance values from the applications running in the different environments.
 
-Available collection of probes to measure energy in heterogeneous hardware for the TANGO project: (http://tango-project.eu)
+Available collection of probes to measure energy in heterogeneous hardware for the [TANGO project](http://tango-project.eu):
 1. [NVIDIA collectd plugin](Collectd/nvidia_plugin) :white_check_mark:
 
 2. [Xeon Phi collectd plugin](Collectd/xeon_phi_plugin) (needs to be tested)
@@ -48,15 +48,17 @@ The monitor Infrastructure is composed by the following components:
 
 ###### InfluxDB
 
-[InfluxDB](https://www.google.es/#q=influxdb) is used as a data store for the metrics gathered from *Collectd*. The *REST API* and the *Graphana* applications connect to this tool in order to present the processed information.
+[InfluxDB](https://www.influxdata.com/) is used as a data store for the metrics gathered from *Collectd*. The *REST API* and the *Graphana* applications connect to this tool in order to present the processed information.
 
 ###### Graphana
 
 [Graphana](https://grafana.com/) is a data visualization and monitoring tool with support for Graphite, *InfluxDB* and many more databases. This component is used as the GUI of the monitoring component.
 
-###### REST API
+###### [REST API](rest-api/README.md)
 
 The main purpose of the *REST API* application is to offer to other TANGO components the information they need from the metrics gathered from *Collectd*.
+
+View [REST API specification](https://github.com/TANGO-Project/monitor-infrastructure/tree/master/rest-api#api-methods) to see the available methods.
 
 #### Architecture
 
@@ -125,4 +127,6 @@ The other TANGO components connect to the monitor Infrastructure through the RES
 
 - heterogeneous parallel device clusters
 
-- ...
+- Energy modeller
+
+- Self-Adaptation Manager

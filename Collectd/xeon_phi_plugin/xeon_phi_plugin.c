@@ -44,39 +44,25 @@
 
 #include <stdio.h>
 
-//#include "nvml.h"
+// XEON //
+// Required for Windows and Visual Studio 2012 and newer
+#ifndef __linux__
+#define _CRT_SECURE_NO_WARNINGS    1
+#endif
 
+#include <errno.h>
+#include <limits.h>
+#include <miclib.h>
+#ifdef __linux__
+#include <unistd.h>
+#else
+#define usleep(arg)    Sleep(arg / 1000)
+#define NAME_MAX       1000
+#endif
 
-/*
- * https://collectd.org/wiki/index.php/Data_source
- *
- * data source definition:
- * - name of the data source
- * - type of the data source (DS_TYPE_GAUGE, DS_TYPE_COUNTER)
- * - minimum allowed value
- * - maximum allowed value
- */
-static data_source_t dsrc[1] =
-{
-	{ "watts", DS_TYPE_GAUGE, 0, NAN }
-};
-
-/*
- * https://collectd.org/wiki/index.php/Data_set
- *
- * data set definition:
- * - name of the data set
- * - number of data sources
- * - list of data sources
- *
- * NOTE: If you're defining a custom data-set, you have to make that known to any servers as well.
- * Else, the server is not able to store values using the type defined by that data-set.
- * It is strongly recommended to use one of the types and data-sets pre-defined in the types.db file.
- */
-static data_set_t ds =
-{
-	"xeon_phi_plugin", STATIC_ARRAY_SIZE (dsrc), dsrc
-};
+#define MAX_DEVICES    (32)
+#define MAX_CORES      (256)
+#define NUM_SAMPLES    (3)
 
 
 /*
@@ -94,11 +80,11 @@ static int my_init(void) {
 
 
 /*
- * submitPower:
+ * submitValue:
  * 	This is a utility function used by the read callback to populate a value_list_t
  * 	and pass it to plugin_dispatch_values.
  */
-static int submitPower(gauge_t value, unsigned int deviceIndex) {
+static int submitValue(gauge_t value, const char *type, unsigned int deviceIndex) {
 	char strDeviceIndex[8];
 
 	value_list_t vl = VALUE_LIST_INIT;
@@ -106,7 +92,12 @@ static int submitPower(gauge_t value, unsigned int deviceIndex) {
 	vl.values = &(value_t) { .gauge = value }; /* Convert the gauge_t to a value_t and add it to the value_list_t. */
 	vl.values_len = 1;
 
+	sprintf(strDeviceIndex, "%d", deviceIndex);
 
+	sstrncpy(vl.host, hostname_g, sizeof (vl.host));
+	sstrncpy(vl.plugin, "xeonphi", sizeof (vl.plugin));
+	sstrncpy(vl.plugin_instance, strDeviceIndex, sizeof (vl.plugin_instance));
+	sstrncpy(vl.type, type, sizeof (vl.type));
 
 	/* dispatch the values to collectd which passes them on to all registered write functions */
 	return plugin_dispatch_values(&vl);
@@ -118,6 +109,60 @@ static int submitPower(gauge_t value, unsigned int deviceIndex) {
  */
 static int my_read (void) {
 
+	for (i = 0; i < 2; i++) {
+
+		/***************************************************************************************
+		 * POWER
+		 ***************************************************************************************/
+		 /*
+		 if (submitValue(totalWatts, "power", i) != 0) {
+			 WARNING("xeonphi_plugin plugin: Dispatching a value failed.");
+		 }
+		 */
+
+		/***************************************************************************************
+		 * UTILIZATION
+		 ***************************************************************************************/
+		 /*
+		 if (submitValue(nvmlUtilization.gpu, "percent", i) != 0) {
+			 WARNING("xeonphi_plugin plugin: Dispatching a value [percent] failed.");
+		 }
+		 */
+
+		/***************************************************************************************
+		 * MEMORY
+		 ***************************************************************************************/
+		 /*
+		 if (submitValue(nvmlUtilization.memory, "memory", i) != 0) {
+			WARNING("xeonphi_plugin plugin: Dispatching a value [memory] failed.");
+			}
+		*/
+
+		/***************************************************************************************
+		 * TEMPERATURE
+		 ***************************************************************************************/
+		/*
+			 Retrieves the current temperature readings for the device, in degrees C
+		 */
+		 /*
+		 if (submitValue(ret, "temperature", i) != 0) {
+			 WARNING("xeonphi_plugin plugin: Dispatching a value failed.");
+		 }
+		 */
+
+		/***************************************************************************************
+		 * RUNNING PROCESSES
+		 ***************************************************************************************/
+		/*
+			This function returns about compute running processes
+		*/
+		/*
+		if (submitValue(num_procs, "objects", i) != 0) {
+			WARNING("xeonphi_plugin plugin: Dispatching a value failed.");
+		}
+		*/
+
+	}
 
 	/* A return value != 0 indicates an error and the plugin will be skipped for an increasing amount of time. */
 	return 0;
@@ -133,11 +178,13 @@ static void my_log(int severity, const char *msg, user_data_t *ud) {
 }
 
 
-
 /*
  * This function is called before shutting down collectd.
  */
 static int my_shutdown(void) {
+	nvmlReturn_t result;
+
+	/* close sockets, free data structures, ... */
 
 
 	return 0;
@@ -148,12 +195,9 @@ static int my_shutdown(void) {
  * This function is called after loading the plugin to register it with collectd.
  */
 void module_register(void) {
-	plugin_register_log("xeon_phi_plugin", my_log, /* user data */ NULL);
-	//plugin_register_notification("xeon_phi_plugin", my_notify, /* user data */ NULL);
-	plugin_register_data_set(&ds);
-	plugin_register_read("xeon_phi_plugin", my_read);
-	plugin_register_init("xeon_phi_plugin", my_init);
-	//plugin_register_write("xeon_phi_plugin", my_write, /* user data */ NULL);
-	plugin_register_shutdown("xeon_phi_plugin", my_shutdown);
-    return;
+	plugin_register_log("xeonphi_plugin", my_log, /* user data */ NULL);
+	plugin_register_read("xeonphi_plugin", my_read);
+	plugin_register_init("xeonphi_plugin", my_init);
+	plugin_register_shutdown("xeonphi_plugin", my_shutdown);
+  return;
 }

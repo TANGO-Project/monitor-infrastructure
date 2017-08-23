@@ -1,5 +1,7 @@
 ## Monitor Infrastructure - Xeon Phi plugin
 
-&copy; Atos 2016
+This plugin relies in the [mpss-micmgmt library](https://github.com/CIRCL/mpss-micmgmt), a C-based [API](LIBMICMGMT.md) for monitoring and managing various states of the XEON PHI devices.
 
-Xeon Phi plugin.
+## License
+
+  &copy; Atos 2016

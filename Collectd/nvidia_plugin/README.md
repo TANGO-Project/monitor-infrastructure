@@ -1,6 +1,6 @@
 ## Monitor Infrastructure - NVIDIA plugin
 
-This plugin relies in the [NVIDIA Management Library](https://developer.nvidia.com/nvidia-management-library-nvml), a C-based API for monitoring and managing various states of the NVIDIA GPU devices. It provides a direct access to the queries and commands exposed via nvidia-smi. The runtime version of NVML ships with the NVIDIA display driver, and the SDK provides the appropriate header, stub libraries and sample applications.
+This plugin relies in the [NVIDIA Management Library](https://developer.nvidia.com/nvidia-management-library-nvml), a C-based [API](NVML_API_Reference_Guide.pdf) for monitoring and managing various states of the NVIDIA GPU devices. It provides a direct access to the queries and commands exposed via nvidia-smi. The runtime version of NVML ships with the NVIDIA display driver, and the SDK provides the appropriate header, stub libraries and sample applications.
   * **Supported OS platforms:**
     * Windows: Windows Server 2008 R2 64bit, Windows 7 64bit
     * Linux: 32-bit and 64-bit
