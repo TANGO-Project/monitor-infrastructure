@@ -45,37 +45,53 @@
 #include <stdio.h>
 
 // XEON //
-// Required for Windows and Visual Studio 2012 and newer
-#ifndef __linux__
-#define _CRT_SECURE_NO_WARNINGS    1
-#endif
-
 #include <errno.h>
 #include <limits.h>
 #include <miclib.h>
-#ifdef __linux__
 #include <unistd.h>
-#else
-#define usleep(arg)    Sleep(arg / 1000)
-#define NAME_MAX       1000
-#endif
 
-#define MAX_DEVICES    (32)
-#define MAX_CORES      (256)
-#define NUM_SAMPLES    (3)
+int ncards;
+struct mic_devices_list *mdl;
 
 
 /*
  * This function is called once upon startup to initialize the plugin.
  */
 static int my_init(void) {
-	nvmlReturn_t result;
+	int ret;
 
 	/* open sockets, initialize data structures, ... */
+	ret = mic_get_devices(&mdl);
+  if (ret == E_MIC_DRIVER_NOT_LOADED) {
+    fprintf(stderr, "Error: The driver is not loaded! ");
+    fprintf(stderr, "Load the driver before using this tool.\n");
+    return 1; /* Return a general error to the shell */
+  }
+  else if (ret == E_MIC_ACCESS) {
+    fprintf(stderr, "Error: Access is denied to the driver! ");
+    fprintf(stderr, "Do you have permissions to access the driver?\n");
+    return 1; /* Return a general error to the shell */
+  }
+  else if (ret != E_MIC_SUCCESS) {
+    fprintf(stderr, "Failed to get cards list: %s: %s\n", mic_get_error_string(), strerror(errno));
+    return 1;
+  }
 
+  if (mic_get_ndevices(mdl, &ncards) != E_MIC_SUCCESS) {
+    fprintf(stderr, "Error: Failed to get number of cards! ");
+    (void)mic_free_devices(mdl);
+    return 2;
+  }
+
+  if (ncards == 0) {
+    fprintf(stderr, "Error: No MIC card found! ");
+    (void)mic_free_devices(mdl);
+    return 3;
+  }
+  printf("    Found %d ncards \n", ncards);
 
 	/* A return value != 0 indicates an error and causes the plugin to be disabled. */
-    return 0;
+  return 0;
 }
 
 
@@ -108,17 +124,61 @@ static int submitValue(gauge_t value, const char *type, unsigned int deviceIndex
  * This function is called in regular intervalls to collect the data.
  */
 static int my_read (void) {
+	struct mic_device *mdh;
+	uint32_t device_type;
+  unsigned int card_num;
 
-	for (i = 0; i < 2; i++) {
+	for (card_num = 0; card_num < ncards; card_num++) {
+    int card, total_util;
+    struct mic_power_util_info *pinfo;
+    uint32_t pwr;
+    struct mic_memory_util_info *memory;
+    uint32_t total_size, avail_size;
+    struct mic_thermal_info *thermal;
+    uint32_t temp;
+    struct mic_core_util *cutil = NULL;
+    uint64_t idle_sum, sys_sum, nice_sum, user_sum;
+
+		/* Get card at index card_num */
+    if (mic_get_device_at_index(mdl, card_num, &card) != E_MIC_SUCCESS) {
+        fprintf(stderr, "Error: Failed to get card at index %d: %s: %s\n", card_num, mic_get_error_string(), strerror(errno));
+        mic_free_devices(mdl);
+        return 1;
+    }
+
+    if (mic_open_device(&mdh, card) != E_MIC_SUCCESS) {
+        fprintf(stderr, "Error: Failed to open card %d: %s: %s\n", card_num, mic_get_error_string(), strerror(errno));
+        return 2;
+    }
+
+    if (mic_get_device_type(mdh, &device_type) != E_MIC_SUCCESS) {
+        fprintf(stderr, "Error: Failed to get device type %s! ", mic_get_device_name(mdh));
+        (void)mic_close_device(mdh);
+        return 3;
+    }
+
+    if (device_type != KNC_ID) {
+      fprintf(stderr, "Error: Unknown device Type: %u\n", device_type);
+      (void)mic_close_device(mdh);
+      return 4;
+    }
 
 		/***************************************************************************************
-		 * POWER
+		 * POWER:
+     *    int *mic_get_power_utilization_info*(struct mic_device *device, struct mic_power_util_info **power_info);
+     *    int mic_get_inst_power_readings(struct mic_power_util_info *power_info, uint32_t *power)
+     *    int *mic_free_power_utilization_info*(struct mic_power_util_info *power_info);
 		 ***************************************************************************************/
-		 /*
-		 if (submitValue(totalWatts, "power", i) != 0) {
-			 WARNING("xeonphi_plugin plugin: Dispatching a value failed.");
-		 }
-		 */
+    if (mic_get_power_utilization_info(mdh, &pinfo) != E_MIC_SUCCESS) {
+      fprintf(stderr, "Error: Failed to get power utilization information: %s\n", mic_get_device_name(mdh));
+    }
+    else if (mic_get_inst_power_readings(pinfo, &pwr) != E_MIC_SUCCESS) {
+      fprintf(stderr, "Error: Failed to get instant power readings: %s\n", mic_get_device_name(mdh));
+    }
+		else if (submitValue((pwr / 1000000), "power", i) != 0) {
+			plugin_log(LOG_WARNING("xeonphi_plugin plugin: Dispatching a value failed.");
+		}
+    (void)mic_free_power_utilization_info(pinfo);
 
 		/***************************************************************************************
 		 * UTILIZATION
@@ -129,26 +189,45 @@ static int my_read (void) {
 		 }
 		 */
 
-		/***************************************************************************************
-		 * MEMORY
-		 ***************************************************************************************/
-		 /*
-		 if (submitValue(nvmlUtilization.memory, "memory", i) != 0) {
-			WARNING("xeonphi_plugin plugin: Dispatching a value [memory] failed.");
-			}
-		*/
+		 /***************************************************************************************
+ 		 * MEMORY
+      *    int *mic_get_memory_utilization_info*(struct mic_device *device, struct mic_memory_util_info **memory);
+      *    int *mic_get_total_memory_size*(struct mic_memory_util_info *memory, uint32_t *total_size);
+      *    int *mic_get_available_memory_size*(struct mic_memory_util_info *memory, uint32_t *avail_size);
+      *    int *mic_get_memory_buffers_size*(struct mic_memory_util_info *memory, uint32_t *bufs);
+      *    int *mic_free_memory_utilization_info*(struct mic_memory_util_info *memory);
+ 		 ***************************************************************************************/
+    if (mic_get_memory_utilization_info(mdh, &memory) != E_MIC_SUCCESS) {
+      fprintf(stderr, "Error: Failed to get memory utilization information: %s\n", mic_get_device_name(mdh));
+    }
+    else if (mic_get_total_memory_size(memory, &total_size) != E_MIC_SUCCESS) {
+      fprintf(stderr, "Error: Failed to get total_memory_size: %s\n", mic_get_device_name(mdh));
+    }
+    else if (mic_get_available_memory_size(memory, &avail_size) != E_MIC_SUCCESS) {
+      fprintf(stderr, "Error: Failed to get available_memory_size: %s\n", mic_get_device_name(mdh));
+    }
+		else if (submitValue(((total_size-avail_size) / 1024), "memory", i) != 0) {
+			plugin_log(LOG_WARNING("xeonphi_plugin plugin: Dispatching a value [memory] failed.");
+		}
+		(void)mic_free_memory_utilization_info(memory);
 
 		/***************************************************************************************
-		 * TEMPERATURE
-		 ***************************************************************************************/
-		/*
-			 Retrieves the current temperature readings for the device, in degrees C
-		 */
-		 /*
-		 if (submitValue(ret, "temperature", i) != 0) {
-			 WARNING("xeonphi_plugin plugin: Dispatching a value failed.");
-		 }
-		 */
+ 		 * TEMPERATURE
+     *    int *mic_get_thermal_info*(struct mic_device *device, struct mic_thermal_info **thermal);
+     *    int mic_get_die_temp(struct mic_thermal_info *thermal, uint32_t *temp);
+     *    int mic_get_gddr_temp(struct mic_thermal_info *thermal, uint16_t *temp);
+     *    int *mic_free_thermal_info*(struct mic_thermal_info *thermal);
+ 		 ***************************************************************************************/
+    if (mic_get_thermal_info(mdh, &thermal) != E_MIC_SUCCESS) {
+      fprintf(stderr, "Error: Failed to get thermal information: %s\n", mic_get_device_name(mdh));
+    }
+    else if (mic_get_die_temp(thermal, &temp) != E_MIC_SUCCESS) {
+      fprintf(stderr, "Error: Failed to get instant thermal readings: %s\n", mic_get_device_name(mdh));
+    }
+		else if (submitValue(temp, "temperature", i) != 0) {
+			plugin_log(LOG_WARNING("xeonphi_plugin plugin: Dispatching a value failed.");
+		}
+    (void)mic_free_thermal_info(thermal);
 
 		/***************************************************************************************
 		 * RUNNING PROCESSES
@@ -185,7 +264,7 @@ static int my_shutdown(void) {
 	nvmlReturn_t result;
 
 	/* close sockets, free data structures, ... */
-
+	(void)mic_free_devices(mdl);
 
 	return 0;
 }

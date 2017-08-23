@@ -30,6 +30,7 @@ Further, Intel disclaims all liability of any kind, including but not limited to
   - [Processor Information Functions](#processor-information-functions)
   - [Coprocessor OS Information Functions](#coprocessor-os-information-functions)
   - [Thermal Information Functions](#thermal-information-functions)
+  - [Memory Utilization Functions](#memory-utilization-functions)
 - [COPYRIGHT](#copyright)
 
 -----------------------------
@@ -1466,7 +1467,7 @@ spent in user mode on all threads in the associated coprocessor.
 
 -----------------------------
 
-### Thermal Information Functions ###
+### Thermal Information Functions [top](#thermal-information-functions) ###
 
 #### int *mic_get_thermal_info*(struct mic_device *device, struct mic_thermal_info **thermal);
 
@@ -2311,6 +2312,8 @@ TBD
 ////
 
 -----------------------------
+
+### Memory Utilization Functions [top](#memory-utilization) ###
 
 #### int *mic_get_memory_utilization_info*(struct mic_device *device, struct mic_memory_util_info **memory);
 
