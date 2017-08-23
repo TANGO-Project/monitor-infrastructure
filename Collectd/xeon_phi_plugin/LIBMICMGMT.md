@@ -17,13 +17,16 @@ Further, Intel disclaims all liability of any kind, including but not limited to
 
 -----------------------
 
-[NAME](#name)
-
-[SYNOPSIS](#synopsis)
-
-[DESCRIPTION](#description)
-
-[COPYRIGHT](#copyright)
+- [NAME](#name)
+- [SYNOPSIS](#synopsis)
+  - [Identify Available Coprocessors](#identify-available-coprocessors)
+  - [Open Close Coprocessor](#open-close-coprocessor)
+  - [Memory Information](#memory-information)
+  - [Thermal Information](#thermal-information)
+  - [Power Utilization Information](#power-utilization-information)
+  - [Memory Utilization](#memory-utilization)
+- [DESCRIPTION](#description)
+- [COPYRIGHT](#copyright)
 
 -----------------------------
 
@@ -39,72 +42,66 @@ Further, Intel disclaims all liability of any kind, including but not limited to
 
 "libmicmgmt" library provides a C-library interface to Intel(R) Xeon Phi(TM) coprocessors (also known as 'Many Integrated Core' or MIC) to applications running on the host system. These are essentially wrappers built on top of the MIC host driver interfaces that are available in the form of ioctls, sysfs entries(in Linux), WMI entries(in Microsoft Windows) and scif calls. Various functions are available to query the state of each coprocessor, or list or modify some of its parameters. Library functions are categorized into the following groups: +
 
-....
-....
 
-**Identify Available Coprocessors** +
+#### Identify Available Coprocessors ####
 
-int *mic_get_devices*(struct mic_devices_list **devices); +
+```
+int *mic_get_devices*(struct mic_devices_list **devices);
 
-int *mic_free_devices*(struct mic_devices_list *devices); +
+int *mic_free_devices*(struct mic_devices_list *devices);
 
-int *mic_get_ndevices*(struct mic_devices_list *devices, int *ndevices); +
+int *mic_get_ndevices*(struct mic_devices_list *devices, int *ndevices);
 
-int *mic_get_device_at_index*(struct mic_devices_list *devices, int index, int *device); +
+int *mic_get_device_at_index*(struct mic_devices_list *devices, int index, int *device);
+```
 
-....
-....
+#### Open Close Coprocessor ####
 
-**Open/Close Coprocessor** +
+```
+int *mic_open_device*(struct mic_device **device, uint32_t device_num);
 
-int *mic_open_device*(struct mic_device **device, uint32_t device_num); +
+int *mic_close_device*(struct mic_device *device);
+```
 
-int *mic_close_device*(struct mic_device *device); +
+#### Driver Information ####
 
-....
-....
+```
+int *mic_get_device_type*(struct mic_device *device, uint32_t *type);
 
-**Driver Information** +
+const char **mic_get_device_name*(struct mic_device *device);
 
-int *mic_get_device_type*(struct mic_device *device, uint32_t *type); +
+int *mic_get_sysfs_attribute*(struct mic_device *device, const char *name, char *value, size_t *size);
+```
 
-const char **mic_get_device_name*(struct mic_device *device); +
+#### Error Reporting ####
 
-int *mic_get_sysfs_attribute*(struct mic_device *device, const char *name, char *value, size_t *size); +
+```
+const char **mic_get_error_string*(void);
 
-....
-....
+int *mic_clear_error_string*(void);
 
-**Error Reporting** +
+int *mic_get_ras_errno*(void);
 
-const char **mic_get_error_string*(void); +
+const char **mic_get_ras_error_string*(int ras_errno);
+```
 
-int *mic_clear_error_string*(void); +
+#### Query/modify Coprocessor State ####
 
-int *mic_get_ras_errno*(void); +
+```
+int *mic_enter_maint_mode*(struct mic_device *device);
 
-const char **mic_get_ras_error_string*(int ras_errno); +
+int *mic_leave_maint_mode*(struct mic_device *device);
 
-....
-....
+int *mic_in_maint_mode*(struct mic_device *device, int *mode);
 
-**Query/modify Coprocessor State** +
+int *mic_in_ready_state*(struct mic_device *device, int *state);
 
-int *mic_enter_maint_mode*(struct mic_device *device); +
+int *mic_get_post_code*(struct mic_device *device, char *post_code, size_t *size);
+```
 
-int *mic_leave_maint_mode*(struct mic_device *device); +
+#### Flash Operations ####
 
-int *mic_in_maint_mode*(struct mic_device *device, int *mode); +
-
-int *mic_in_ready_state*(struct mic_device *device, int *state); +
-
-int *mic_get_post_code*(struct mic_device *device, char *post_code, size_t *size); +
-
-....
-....
-
-**Flash Operations** +
-
+```
 int *mic_flash_size*(struct mic_device *device, size_t *size); +
 
 int *mic_flash_active_offs*(struct mic_device *device, off_t *active); +
@@ -134,12 +131,11 @@ int *mic_get_ext_status*(struct mic_flash_status_info *status, int *ext_status);
 int *mic_flash_version*(struct mic_device *device, void *buf, char *str, size_t strsize); +
 
 int *mic_get_flash_vendor_device*(struct mic_device *device, char *buf, size_t *size); +
+```
 
-....
-....
+#### PCI Configuration Parameters ####
 
-**PCI Configuration Parameters** +
-
+```
 int *mic_get_pci_config*(struct mic_device *device, struct mic_pci_config **conf); +
 
 int *mic_free_pci_config*(struct mic_pci_config *conf); +
@@ -167,12 +163,11 @@ int *mic_get_max_readreq*(struct mic_pci_config *conf, uint32_t *readreq); +
 int *mic_get_pci_class_code*(struct mic_pci_config *conf, char *class_code, size_t *size);+
 
 int *mic_get_pci_domain_id*(struct mic_pci_config *conf, uint16_t *domain);+
+```
 
-....
-....
+#### Memory Information ####
 
-**Memory Information** +
-
+```
 int *mic_get_memory_info*(struct mic_device *device, struct mic_device_mem **mem_info); +
 
 int *mic_free_memory_info*(struct mic_device_mem *mem_info); +
@@ -194,12 +189,11 @@ int *mic_get_memory_frequency*(struct mic_device_mem *mem_info, uint32_t *freq);
 int *mic_get_memory_voltage*(struct mic_device_mem *mem, uint32_t *buf); +
 
 int *mic_get_ecc_mode*(struct mic_device_mem *mem_info, uint16_t *mode); +
+```
 
-....
-....
+#### Processor Information ####
 
-**Processor Information** +
-
+```
 int *mic_get_processor_info*(struct mic_device *device, struct mic_processor_info **proc_info); +
 
 int *mic_free_processor_info*(struct mic_processor_info *proc_info); +
@@ -213,12 +207,11 @@ int *mic_get_processor_type*(struct mic_processor_info *proc_info, uint16_t *typ
 int *mic_get_processor_steppingid*(struct mic_processor_info *proc_info, uint32_t *id); +
 
 int *mic_get_processor_stepping*(struct mic_processor_info *proc_info, char *stepping, size_t *size)
+```
 
-....
-....
+#### Coprocessor OS Information ####
 
-**Coprocessor OS Information** +
-
+```
 int *mic_get_cores_info*(struct mic_device *device, struct mic_cores_info **cores_info); +
 
 int *mic_free_cores_info*(struct mic_cores_info *cores_info); +
@@ -258,13 +251,12 @@ int *mic_get_jiffy_counter*(struct mic_core_util *cutil, uint64_t *jiffy); +
 int *mic_get_num_cores*(struct mic_core_util *cutil, uint16_t *num_cores); +
 
 int *mic_get_threads_core*(struct mic_core_util *cutil, uint16_t *threads_core); +
+```
 
-....
-....
+#### Thermal Information ####
 
-**Thermal Information** +
-
-int *mic_get_thermal_info*(struct mic_device *device, struct mic_thermal_info **thermal); +
+```
+int *mic_get_thermal_info*(struct mic_device *device, struct mic_thermal_info **thermal);
 
 int *mic_free_thermal_info*(struct mic_thermal_info *thermal); +
 
@@ -309,38 +301,37 @@ int *mic_is_vddq_temp_valid*(struct mic_thermal_info *thermal, int *valid); +
 int *mic_get_fan_rpm*(struct mic_thermal_info *thermal, uint32_t *rpm); +
 
 int *mic_get_fan_pwm*(struct mic_thermal_info *thermal, uint32_t *pwm); +
+```
 
-....
-....
+#### Version Information ####
 
-**Version Information** +
+```
+int *mic_get_version_info*(struct mic_device *device, struct mic_version_info **version);
 
-int *mic_get_version_info*(struct mic_device *device, struct mic_version_info **version); +
+int *mic_free_version_info*(struct mic_version_info *version);
 
-int *mic_free_version_info*(struct mic_version_info *version); +
+int *mic_get_uos_version*(struct mic_version_info *version, char *uos_version, size_t *size);
 
-int *mic_get_uos_version*(struct mic_version_info *version, char *uos_version, size_t *size); +
+int *mic_get_flash_version*(struct mic_version_info *version, char *flash_version, size_t *size);
 
-int *mic_get_flash_version*(struct mic_version_info *version, char *flash_version, size_t *size); +
+int *mic_get_fsc_strap*(struct mic_version_info *version, char *strap, size_t *size);
+```
 
-int *mic_get_fsc_strap*(struct mic_version_info *version, char *strap, size_t *size); +
+#### SKU Information ####
 
-....
-....
+```
+int *mic_get_silicon_sku*(struct mic_device *device, char *sku, size_t *size);
+```
 
-**SKU Information** +
+#### Serial Number ####
 
-int *mic_get_silicon_sku*(struct mic_device *device, char *sku, size_t *size); +
+```
+int *mic_get_serial_number*(struct mic_device *device, char *serial, size_t *size);
+```
 
-**Serial Number** +
+#### Power Utilization Information ####
 
-int *mic_get_serial_number*(struct mic_device *device, char *serial, size_t *size); +
-
-....
-....
-
-**Power Utilization Information** +
-
+```
 int *mic_get_power_utilization_info*(struct mic_device *device, struct mic_power_util_info **power_info);
 
 int *mic_free_power_utilization_info*(struct mic_power_util_info *power_info);
@@ -355,86 +346,64 @@ int *mic_get_total_power_sensor_sts_w1*(struct mic_power_util_info *power_info, 
 
 int *mic_get_inst_power_readings*(struct mic_power_util_info *power_info, uint32_t *power);
 
-int *mic_get_inst_power_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status); +
+int *mic_get_inst_power_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status);
 
-int *mic_get_max_inst_power_readings*(struct mic_power_util_info *power_info, uint32_t *power); +
+int *mic_get_max_inst_power_readings*(struct mic_power_util_info *power_info, uint32_t *power);
 
-int *mic_get_max_inst_power_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status); +
+int *mic_get_max_inst_power_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status);
 
-int *mic_get_pcie_power_readings*(struct mic_power_util_info *power_info, uint32_t *power); +
+int *mic_get_pcie_power_readings*(struct mic_power_util_info *power_info, uint32_t *power);
 
-int *mic_get_pcie_power_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status); +
+int *mic_get_pcie_power_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status);
 
-int *mic_get_c2x3_power_readings*(struct mic_power_util_info *power_info, uint32_t *power); +
+int *mic_get_c2x3_power_readings*(struct mic_power_util_info *power_info, uint32_t *power);
 
-int *mic_get_c2x3_power_sensor_sts*(struct mic_power_util_info *power_info,
-                                  uint32_t *status); +
+int *mic_get_c2x3_power_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status);
 
-int *mic_get_c2x4_power_readings*(struct mic_power_util_info *power_info,
-                                uint32_t *power); +
+int *mic_get_c2x4_power_readings*(struct mic_power_util_info *power_info, uint32_t *power);
 
-int *mic_get_c2x4_power_sensor_sts*(struct mic_power_util_info *power_info,
-                                  uint32_t *status); +
+int *mic_get_c2x4_power_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status);
 
-int *mic_get_vccp_power_readings*(struct mic_power_util_info *power_info,
-                                uint32_t *power); +
+int *mic_get_vccp_power_readings*(struct mic_power_util_info *power_info, uint32_t *power);
 
-int *mic_get_vccp_power_sensor_sts*(struct mic_power_util_info *power_info,
-                                  uint32_t *status); +
+int *mic_get_vccp_power_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status);
 
-int *mic_get_vccp_current_readings*(struct mic_power_util_info *power_info,
-                                  uint32_t *current); +
+int *mic_get_vccp_current_readings*(struct mic_power_util_info *power_info, uint32_t *current);
 
-int *mic_get_vccp_current_sensor_sts*(struct mic_power_util_info *power_info,
-                                    uint32_t *status); +
+int *mic_get_vccp_current_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status);
 
-int *mic_get_vccp_voltage_readings*(struct mic_power_util_info *power_info,
-                                  uint32_t *voltage); +
+int *mic_get_vccp_voltage_readings*(struct mic_power_util_info *power_info, uint32_t *voltage);
 
-int *mic_get_vccp_voltage_sensor_sts*(struct mic_power_util_info *power_info,
-                                    uint32_t *status); +
+int *mic_get_vccp_voltage_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status);
 
-int *mic_get_vddg_power_readings*(struct mic_power_util_info *power_info,
-                                uint32_t *power); +
+int *mic_get_vddg_power_readings*(struct mic_power_util_info *power_info, uint32_t *power);
 
-int *mic_get_vddg_power_sensor_sts*(struct mic_power_util_info *power_info,
-                                    uint32_t *status); +
+int *mic_get_vddg_power_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status);
 
-int *mic_get_vddg_current_readings*(struct mic_power_util_info *power_info,
-                                  uint32_t *current); +
+int *mic_get_vddg_current_readings*(struct mic_power_util_info *power_info, uint32_t *current);
 
-int *mic_get_vddg_current_sensor_sts*(struct mic_power_util_info *power_info,
-                                    uint32_t *status); +
+int *mic_get_vddg_current_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status);
 
-int *mic_get_vddg_voltage_readings*(struct mic_power_util_info *power_info,
-                                  uint32_t *voltage); +
+int *mic_get_vddg_voltage_readings*(struct mic_power_util_info *power_info, uint32_t *voltage);
 
-int *mic_get_vddg_voltage_sensor_sts*(struct mic_power_util_info *power_info,
-                                    uint32_t *status); +
+int *mic_get_vddg_voltage_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status);
 
-int *mic_get_vddq_power_readings*(struct mic_power_util_info *power_info,
-                                uint32_t *power); +
+int *mic_get_vddq_power_readings*(struct mic_power_util_info *power_info, uint32_t *power);
 
-int *mic_get_vddq_power_sensor_sts*(struct mic_power_util_info *power_info,
-                                    uint32_t *status); +
+int *mic_get_vddq_power_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status);
 
-int *mic_get_vddg_current_readings*(struct mic_power_util_info *power_info,
-                                  uint32_t *current); +
+int *mic_get_vddg_current_readings*(struct mic_power_util_info *power_info, uint32_t *current);
 
-int *mic_get_vddq_current_sensor_sts*(struct mic_power_util_info *power_info,
-                                    uint32_t *status); +
+int *mic_get_vddq_current_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status);
 
-int *mic_get_vddq_voltage_readings*(struct mic_power_util_info *power_info,
-                                  uint32_t *voltage); +
+int *mic_get_vddq_voltage_readings*(struct mic_power_util_info *power_info, uint32_t *voltage);
 
-int *mic_get_vddq_voltage_sensor_sts*(struct mic_power_util_info *power_info,
-                                    uint32_t *status); +
+int *mic_get_vddq_voltage_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status);
+```
 
-....
-....
+#### Memory Utilization ####
 
-**Memory Utilization**
-
+```
 int *mic_get_memory_utilization_info*(struct mic_device *device, struct mic_memory_util_info **memory);
 
 int *mic_get_total_memory_size*(struct mic_memory_util_info *memory, uint32_t *total_size);
@@ -444,12 +413,11 @@ int *mic_get_available_memory_size*(struct mic_memory_util_info *memory, uint32_
 int *mic_get_memory_buffers_size*(struct mic_memory_util_info *memory, uint32_t *bufs);
 
 int *mic_free_memory_utilization_info*(struct mic_memory_util_info *memory);
+```
 
-....
-....
+#### Power Limits ####
 
-**Power Limits**
-
+```
 int *mic_get_power_limit*(struct mic_device *device, struct mic_power_limit **limit);
 
 int *mic_get_power_phys_limit*(struct mic_power_limit *limit, uint32_t *phys_lim);
@@ -467,46 +435,35 @@ int *mic_set_power_limit0*(struct mic_device *mdh, uint32_t power, uint32_t time
 int *mic_set_power_limit1*(struct mic_device *mdh, uint32_t power, uint32_t time_window);
 
 int *mic_free_power_limit*(struct mic_power_limit *limit);
+```
 
-....
-....
+#### Throttle State ####
 
-**Throttle State**
+```
+int *mic_get_throttle_state_info*(struct mic_device *device, struct mic_throttle_state_info **ttl_state);
 
-int *mic_get_throttle_state_info*(struct mic_device *device,
-                                struct mic_throttle_state_info **ttl_state);
+int *mic_get_thermal_ttl_active*(struct mic_throttle_state_info *ttl_state, int *active);
 
-int *mic_get_thermal_ttl_active*(struct mic_throttle_state_info *ttl_state,
-                               int *active);
+int *mic_get_thermal_ttl_current_len*(struct mic_throttle_state_info *ttl_state, uint32_t *current);
 
-int *mic_get_thermal_ttl_current_len*(struct mic_throttle_state_info *ttl_state,
-                                    uint32_t *current);
+int *mic_get_thermal_ttl_count*(struct mic_throttle_state_info *ttl_state, uint32_t *count);
 
-int *mic_get_thermal_ttl_count*(struct mic_throttle_state_info *ttl_state,
-                              uint32_t *count);
+int *mic_get_thermal_ttl_time*(struct mic_throttle_state_info *ttl_state, uint32_t *time);
 
-int *mic_get_thermal_ttl_time*(struct mic_throttle_state_info *ttl_state,
-                             uint32_t *time);
+int *mic_get_power_ttl_active*(struct mic_throttle_state_info *ttl_state, int *active);
 
-int *mic_get_power_ttl_active*(struct mic_throttle_state_info *ttl_state,
-                             int *active);
+int *mic_get_power_ttl_current_len*(struct mic_throttle_state_info *ttl_state, uint32_t *current);
 
-int *mic_get_power_ttl_current_len*(struct mic_throttle_state_info *ttl_state,
-                                  uint32_t *current);
+int *mic_get_power_ttl_count*(struct mic_throttle_state_info *ttl_state,  uint32_t *count);
 
-int *mic_get_power_ttl_count*(struct mic_throttle_state_info *ttl_state,
-                            uint32_t *count);
-
-int *mic_get_power_ttl_time*(struct mic_throttle_state_info *ttl_state,
-                           uint32_t *time);
+int *mic_get_power_ttl_time*(struct mic_throttle_state_info *ttl_state, uint32_t *time);
 
 int *mic_free_throttle_state_info*(struct mic_throttle_state_info *ttl_state);
+```
 
-....
-....
+#### Turbo State ####
 
-**Turbo State**
-
+```
 int *mic_get_turbo_state_info*(struct mic_device *device, struct mic_turbo_info **turbo);
 
 int *mic_get_turbo_state*(struct mic_turbo_info *turbo, uint32_t *active);
@@ -518,12 +475,11 @@ int *mic_set_turbo_mode*(struct mic_device *device, uint32_t *mode);
 int *mic_get_turbo_state_valid*(struct mic_turbo_info *turbo, uint32_t *valid);
 
 int *mic_free_turbo_info*(struct mic_turbo_info *turbo);
+```
 
-....
-....
+#### Miscellaneous ####
 
-**Miscellaneous**
-
+```
 int *mic_get_led_alert*(struct mic_device *device, uint32_t *led_alert);
 
 int *mic_set_led_alert*(struct mic_device *device, uint32_t *led_alert);
@@ -535,12 +491,11 @@ int *mic_is_ras_avail*(struct mic_device *device, int *ras_avail);
 int *mic_get_smc_persistence_flag*(struct mic_device *device, int *persist_flag);
 
 int *mic_set_smc_persistence_flag*(struct mic_device *device, int persist_flag);
+```
 
-....
-....
+#### Coprocessor OS Power Management Configuration ####
 
-**Coprocessor OS Power Management Configuration**
-
+```
 int *mic_get_uos_pm_config*(struct mic_device *mdh, struct mic_uos_pm_config **pm_config);
 
 int *mic_get_cpufreq_mode*(struct mic_uos_pm_config *pm_config, int *mode);
@@ -552,9 +507,7 @@ int *mic_get_pc3_mode*(struct mic_uos_pm_config *pm_config, int *mode);
 int *mic_get_pc6_mode*(struct mic_uos_pm_config *pm_config, int *mode);
 
 int *mic_free_uos_pm_config*(struct mic_uos_pm_config *pm_config);
-
-....
-....
+```
 
 -----------------------------
 
@@ -828,8 +781,7 @@ For additional information see *mic_flash_update_start()* documentation.
 
 -----------------------------
 
-#### int *mic_flash_read_start*(struct mic_device *device, void *buf,
-				size_t bufsize, struct mic_flash_op **desc);
+#### int *mic_flash_read_start*(struct mic_device *device, void *buf, size_t bufsize, struct mic_flash_op **desc);
 
 This function may be called to read the flash memory in maintenance mode.
 This function reads the first *bufsize* bytes of flash memory of the
@@ -861,8 +813,7 @@ For additional information see *mic_flash_read_done()* documentation.
 
 -----------------------------
 
-#### int *mic_set_ecc_mode_start*(struct mic_device *mdh, uint16_t ecc_enabled,
-                struct mic_flash_op **desc);
+#### int *mic_set_ecc_mode_start*(struct mic_device *mdh, uint16_t ecc_enabled, struct mic_flash_op **desc);
 
 This function may be called to set the ECC mode while the coprocessor is in
 "ready" state. Upon successful start of this asynchronous operation, a
@@ -882,8 +833,7 @@ other input value will result in undetermined behavior.
 
 -----------------------------
 
-#### int *mic_get_flash_status_info*(struct mic_flash_op *desc,
-			struct mic_flash_status_info **status_info);
+#### int *mic_get_flash_status_info*(struct mic_flash_op *desc, struct mic_flash_status_info **status_info);
 
 This function may be called to get the flash status in maintenance mode.
 The progress of a flash update or read request may be determined with
@@ -915,8 +865,7 @@ handle that has not been freed. Note that this should be used with the
 
 -----------------------------
 
-#### int *mic_get_status*(struct mic_flash_status_info *status,
-				int *status_val);
+#### int *mic_get_status*(struct mic_flash_status_info *status, int *status_val);
 
 
 This function returns the Flash or SMC operation in progress inside
@@ -953,8 +902,7 @@ Valid values returned in *uint32_t *status_val* are:
 
 -----------------------------
 
-#### int *mic_get_ext_status*(struct mic_flash_status_info *status,
-				int *ext_status);
+#### int *mic_get_ext_status*(struct mic_flash_status_info *status, int *ext_status);
 
 This function returns the extended status of a failed operation in *uint32_t
 *ext_status*. This should be called only if the status of the
@@ -962,12 +910,10 @@ corresponding operation returned *FLASH_OP_FAILED*, *FLASH_OP_AUTH_FAILED*, or
 *SMC_OP_FAILED*.
 
 // Detail ext status here?
-....
-....
 
+-----------------------------
 
-int *mic_flash_version*(struct mic_device *device, void *buf, char *str,
-					size_t strsize); +
+#### int *mic_flash_version*(struct mic_device *device, void *buf, char *str, size_t strsize);
 
 This function may be called to read the current flash version in maintenance
 mode. The current Flash version for the specified coprocessor may be read
@@ -979,12 +925,9 @@ are written into *char *str*, which is always returned nul terminated.
 The behavior of this function is undefined if *strsize* is set to a value larger
 than the size of the buffer pointed to by *str*.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_flash_vendor_device*(struct mic_device *device, char *buf,
-				size_t *size); +
+#### int *mic_get_flash_vendor_device*(struct mic_device *device, char *buf, size_t *size);
 
 This function may be called to get the flash vendor device in maintenance mode.
 This function returns the Flash vendor and device information in the
@@ -995,12 +938,9 @@ location. The appropriate *size_t *size* value can be queried by
 setting the *size* value to 0. No more than the original *size* bytes
 are written into this buffer, which is always returned nul terminated.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_pci_config*(struct mic_device *device,
-					struct mic_pci_config **conf); +
+#### int *mic_get_pci_config*(struct mic_device *device, struct mic_pci_config **conf);
 
 This function returns a handle in *struct mic_pci_config **conf* that
 may be used by accessor functions described below to get PCI configuration
@@ -1018,77 +958,60 @@ returned by a previous successful call to *mic_get_pci_config()*; or the
 associated *struct mic_device *device* was not subsequently closed.
 Otherwise, their behavior is undefined.
 
-....
-....
+-----------------------------
 
-
-int *mic_free_pci_config*(struct mic_pci_config *conf); +
+#### int *mic_free_pci_config*(struct mic_pci_config *conf);
 
 Resources allocated by a *mic_get_pci_config()* call may be released by
 calling *mic_free_pci_config()*.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_bus_number*(struct mic_pci_config *conf, uint16_t *bus_num); +
+#### int *mic_get_bus_number*(struct mic_pci_config *conf, uint16_t *bus_num);
 
 This function returns the PCI bus number for the Intel(R) Xeon Phi(TM)
 coprocessor that was used to return the *struct mic_pci_config *conf*
 handle into memory referenced by *uint16_t *bus_num*. The valid values
 for *uint16_t pass[*]bus_num are 0 to 255.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_device_number*(struct mic_pci_config *conf, uint16_t *dev_num); +
+#### int *mic_get_device_number*(struct mic_pci_config *conf, uint16_t *dev_num);
 
 This accessor function returns the PCI slot number (0 to 31) in memory
 referenced by *uint16_t *dev_num*.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_vendor_id*(struct mic_pci_config *conf, uint16_t *id); +
+#### int *mic_get_vendor_id*(struct mic_pci_config *conf, uint16_t *id);
 
 This function returns the 16-bit PCI vendor id in *uint16_t *id. This
 value is 0x8086 for Intel(R) PCI devices.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_device_id*(struct mic_pci_config *conf, uint16_t *id); +
+#### int *mic_get_device_id*(struct mic_pci_config *conf, uint16_t *id);
 
 This function returns the 16-bit PCI Device ID for the associated
 Intel(R) Xeon Phi(TM) coprocessor.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_revision_id*(struct mic_pci_config *conf, uint8_t *id); +
+#### int *mic_get_revision_id*(struct mic_pci_config *conf, uint8_t *id);
 
 This function returns the 8-bit PCI Revision ID of the coprocessor in
 *uint8_t *id*.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_subsystem_id*(struct mic_pci_config *conf, uint16_t *id); +
+#### int *mic_get_subsystem_id*(struct mic_pci_config *conf, uint16_t *id);
 
 This function returns the 16-bit PCI Subsystem ID of the coprocessor in
 *uint16_t *id*.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_link_speed*(struct mic_pci_config *conf, char *speed,
-					size_t *size); +
+#### int *mic_get_link_speed*(struct mic_pci_config *conf, char *speed, size_t *size); +
 
 This function returns the current PCI Link speed of the Intel(R) Xeon Phi(TM)
 coprocessor in the character buffer referenced by *char *speed*. The
@@ -1098,39 +1021,30 @@ required buffer size, or if the buffer references a NULL or invalid
 memory location. The appropriate *size* value can be queried by setting
 its value to 0.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_link_width*(struct mic_pci_config *conf, uint32_t *width); +
+#### int *mic_get_link_width*(struct mic_pci_config *conf, uint32_t *width);
 
 This function returns the existing PCI Link width of the associated coprocessor
 in *uint32_t *width.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_max_payload*(struct mic_pci_config *conf, uint32_t *payload); +
+#### int *mic_get_max_payload*(struct mic_pci_config *conf, uint32_t *payload);
 
 This function returns the maximum PCI data payload size of the associated
 coprocessor in *uint32_t *payload*.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_max_readreq*(struct mic_pci_config *conf, uint32_t *readreq); +
+#### int *mic_get_max_readreq*(struct mic_pci_config *conf, uint32_t *readreq);
 
 This function gets the maximum PCI read request size of the associated
 coprocessor in *uint32_t *readreq*.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_pci_class_code*(struct mic_pci_config *conf,
-                             char *class_code, size_t *size); +
+#### int *mic_get_pci_class_code*(struct mic_pci_config *conf, char *class_code, size_t *size);
 
 This function returns the current PCI Class code of the Intel(R) Xeon Phi(TM)
 coprocessor in the character buffer referenced by *char *class_code*. The
@@ -1140,43 +1054,32 @@ buffer size, or if the buffer references a NULL or invalid memory location.
 The appropriate *size* value can be queried by setting its value to 0.  No
 more than *size* bytes will be written to the buffer, including the nul terminator.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_pci_domain_id*(struct mic_pci_config *conf,
-                          		uint16_t *domain); +
+#### int *mic_get_pci_domain_id*(struct mic_pci_config *conf, uint16_t *domain);
 
 This function returns the 16-bit PCI domain id in *uint16_t *domain.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_memory_info*(struct mic_device *device,
-					struct mic_device_mem **mem_info); +
+#### int *mic_get_memory_info*(struct mic_device *device, struct mic_device_mem **mem_info);
 
 This function returns a reference to an opaque structure in
 *struct mic_device_mem **mem_info* as a handle. This handle may be used
 by accessor functions described below to get some parameters about memory device
 present on the specified Intel(R) Xeon Phi(TM) Coprocessor.
 
-....
-....
+-----------------------------
 
-
-int *mic_free_memory_info*(struct mic_device_mem *mem_info); +
+#### int *mic_free_memory_info*(struct mic_device_mem *mem_info);
 
 Resources allocated by *mic_get_memory_info()* may be freed by calling
 *mic_free_memory_info* and passing a valid *struct mic_device_mem
 *mem_info* from a previous *mic_get_memory_info()* call.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_memory_vendor*(struct mic_device_mem *mem_info, char *vendor,
-                            size_t *size); +
+#### int *mic_get_memory_vendor*(struct mic_device_mem *mem_info, char *vendor, size_t *size);
 
 This accessor function uses a valid *struct mic_device_mem *mem_info*
 handle and returns the memory device vendor's name in *char *vendor*.
@@ -1189,59 +1092,44 @@ greater than the actual buffer size, or if the buffer references a NULL or
 invalid memory location. The appropriate *size* value can be queried by setting its
 value to 0.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_memory_revision*(struct mic_device_mem *mem_info,
-						uint32_t *revision); +
+#### int *mic_get_memory_revision*(struct mic_device_mem *mem_info, uint32_t *revision);
 
 The hardware revision of the memory device is returned in *uint32_t
 *revision*. This function also retrieves the value from
 */sys/class/mic/mic<n>/meminfo* on Linux machines.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_memory_density*(struct mic_device_mem *mem_info,
-						uint32_t *density); +
+#### int *mic_get_memory_density*(struct mic_device_mem *mem_info, uint32_t *density);
 
 Memory density, in Mega-bits per device, of the memory device present on
 specified Intel(R) Xeon Phi(TM) coprocessor is returned in
 *uint32_t *density*. As with the previous two functions, this value is
 also internally obtained from */sys/class/mic/mic<n>/meminfo* on Linux machines.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_memory_size*(struct mic_device_mem *mem_info,
-						uint32_t *size); +
+#### int *mic_get_memory_size*(struct mic_device_mem *mem_info, uint32_t *size);
 
 This function returns the memory size of the specified Intel(R) Xeon Phi(TM)
 coprocessor, in Kilo-bytes, in the *uint32_t *size* argument.
 On Linux, this value is read from */sys/class/mic/mic<n>/memsize*. On Microsoft
 Windows, this value is read from * memsize * WMI entry.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_memory_speed*(struct mic_device_mem *mem_info,
-						uint32_t *speed); +
+#### int *mic_get_memory_speed*(struct mic_device_mem *mem_info, uint32_t *speed);
 
 *mic_get_memory_speed()* returns the specified coprocessor's memory speed,
 or transaction speed, in kT/sec, in *uint32_t *speed*. On Linux, the
 library uses */sys/class/mic/mic<n>/memspeed* to read this value. On Microsoft
 Windows, the library uses the *memspeed* WMI entry.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_memory_frequency*(struct mic_device_mem *mem_info,
-						uint32_t *frequency); +
+#### int *mic_get_memory_frequency*(struct mic_device_mem *mem_info, uint32_t *frequency);
 
 *mic_get_memory_frequency()* returns the specified coprocessor's memory
 frequency, in one-tenths of GT/sec, in *uint32_t *frequency*.
@@ -1249,12 +1137,9 @@ Internally, on Linux, the library uses */sys/class/mic/mic<n>/memfrequency* to
 read this value, while it uses the * memfrequency * WMI entry on Microsoft
 Windows.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_memory_type*(struct mic_device_mem *mem_info, char *type,
-						size_t *size); +
+#### int *mic_get_memory_type*(struct mic_device_mem *mem_info, char *type, size_t *size);
 
 This interface returns the coprocessor memory type (GDDR5 etc.) in
 *char *type*. The input value of *size_t *size* is used to ensure
@@ -1267,33 +1152,26 @@ bytes will be written to the buffer, including the nul terminator.
 This function currently always returns "GDDR5" for the Intel(R) Xeon Phi(TM)
 coprocessor x100 product family.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_memory_voltage*(struct mic_device_mem *mem_info, uint32_t *volt); +
+#### int *mic_get_memory_voltage*(struct mic_device_mem *mem_info, uint32_t *volt);
 
 The current card memory voltage (in volts) is returned in *uint32 *volt*.
 This value is internally retrieved from */sys/class/mic/mic<n>/memoryvoltage*
 sysfs file on Linux. On Microsoft Windows, the value is internally retrieved
 from *memoryvoltage* WMI entry.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_ecc_mode*(struct mic_device_mem *mem_info, uint16_t *ecc);
+#### int *mic_get_ecc_mode*(struct mic_device_mem *mem_info, uint16_t *ecc);
 
 Return if ECC mode is enabled in the associated Intel(R) Xeon Phi(TM)
 coprocessor in *uint16_t *ecc*. A zero value indicates that it is
 disabled; a non-zero value indicates that ECC mode is enabled.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_processor_info*(struct mic_device *device,
-				struct mic_processor_info **proc_info); +
+#### int *mic_get_processor_info*(struct mic_device *device, struct mic_processor_info **proc_info);
 
 This interface returns an aggregate of coprocessor related parameters of the
 specified Intel(R) Xeon Phi(TM) Coprocessor board inside
@@ -1306,21 +1184,17 @@ Note that the use of a handle from a call to *mic_get_processor_info()* that
 either was not successful, has already been freed, or is associated with a
 closed coprocessor may result in undetermined behavior.
 
-....
-....
+-----------------------------
 
+#### int *mic_free_processor_info*(struct mic_processor_info *proc_info);
 
-int *mic_free_processor_info*(struct mic_processor_info *proc_info); +
-
-....
-....
+-----------------------------
 
 Use this function to free resources allocated in a previous, successful
 *mic_get_processor_info()* call that was not already released.
 
 
-int *mic_get_processor_model*(struct mic_processor_info *proc_info,
-				uint16_t *model, uint16_t *model_ext); +
+#### int *mic_get_processor_model*(struct mic_processor_info *proc_info, uint16_t *model, uint16_t *model_ext);
 
 This function returns the processor model and extended model of the associated
 coprocessor. On Linux, these values are read from */sys/class/mic/mic<n>/model* and
@@ -1331,12 +1205,9 @@ on the coprocessor. On Microsoft Windows, these values are read from WMI entries
 of the result of CPUID instruction with EAX=1 when run on the coprocessor.
 
 
-....
-....
+-----------------------------
 
-
-int *mic_get_processor_family*(struct mic_processor_info *proc_info,
-				uint16_t *family, uint16_t *family_ext); +
+#### int *mic_get_processor_family*(struct mic_processor_info *proc_info, uint16_t *family, uint16_t *family_ext);
 
 This function returns the processor model and extended model of the associated
 coprocessor. On Linux, these values are read from */sys/class/mic/mic<n>/family_data* and
@@ -1348,12 +1219,9 @@ are read from *family_data* and *extended_family* WMI entries and correspond to 
 8-11 and bits 16-19, respectively, of the result of the result of CPUID instruction with
 EAX=1 when run on the coprocessor.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_processor_type*(struct mic_processor_info *proc_info,
-				uint16_t *type); +
+#### int *mic_get_processor_type*(struct mic_processor_info *proc_info, uint16_t *type);
 
 On Linux, this function returns the processor type in *uint16_6 *type that is read
 from */sys/class/mic/mic<n>/processor* sysfs entry and corresponds to bits 12-13
@@ -1362,13 +1230,9 @@ On Microsoft Windows, this function returns the processor type in *uint16_6 pass
 that is read from *processor* WMI entry and corresponds to bits 12-13 of the result
 of CPUID instruction with EAX=1 when run on the coprocessor.
 
+-----------------------------
 
-....
-....
-
-
-int *mic_get_processor_steppingid*(struct mic_processor_info *proc_info,
-				uint32_t *id); +
+#### int *mic_get_processor_steppingid*(struct mic_processor_info *proc_info, uint32_t *id);
 
 The returned *uint32_t *id* constitutes two quantities. On Linux, Bits 4-7 are
 returned from */sys/class/mic/mic<n>/stepping_data* and correspond to bits 0-3
@@ -1378,12 +1242,9 @@ Windows, Bits 4-7 are returned from *stepping_data* WMI entry and correspond to 
 of the result of CPUID instruction with EAX=1 run on the coprocessor. The lower
 four bits (0-3) are read from the *substepping_data* WMI entry.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_processor_stepping*(struct mic_processor_info *proc_info,
-				char *stepping, size_t *size); +
+#### int *mic_get_processor_stepping*(struct mic_processor_info *proc_info, char *stepping, size_t *size);
 
 This function returns a nul terminated character string representing the
 processor stepping and sub-stepping information in *char *stepping. The
@@ -1393,12 +1254,9 @@ undetermined if the input size is greater than the actual buffer size,
 or if the buffer references a NULL or invalid memory location. The
 appropriate *size* value can be queried by setting its value to 0.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_cores_info*(struct mic_device *device,
-                  struct mic_cores_info **cores_info); +
+#### int *mic_get_cores_info*(struct mic_device *device, struct mic_cores_info **cores_info);
 
 This function uses scif requests to populate the
 *struct mic_cores_info **cores* structure that is returned after a
@@ -1407,69 +1265,52 @@ coprocessor cores related parameters. The card specified by
 *struct mic_device *device* must be booted with Linux and scif
 communication established with the host for this set of APIs to work.
 
-....
-....
+-----------------------------
 
-
-int *mic_free_cores_info*(struct mic_cores_info *cores_info); +
+#### int *mic_free_cores_info*(struct mic_cores_info *cores_info);
 
 This function frees the resources allocated in a previous successful
 *mic_get_cores_info()* call that has not already been freed.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_cores_count*(struct mic_cores_info *cores_info, uint32_t *count); +
+#### int *mic_get_cores_count*(struct mic_cores_info *cores_info, uint32_t *count);
 
 This function returns the number of active cores in the associated
 Intel(R) Xeon Phi(R) coprocessor in *uint32_t *count*.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_cores_voltage*(struct mic_cores_info *cores_info,
-						uint32_t *voltage); +
+#### int *mic_get_cores_voltage*(struct mic_cores_info *cores_info, uint32_t *voltage);
 
 This function returns the cores voltage in the associated Intel(R) Xeon Phi(R)
 coprocessor in *uint32_t *voltage*, in uV.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_cores_frequency*(struct mic_cores_info *cores_info,
-						uint32_t *frequency); +
+#### int *mic_get_cores_frequency*(struct mic_cores_info *cores_info, uint32_t *frequency);
 
 This function returns the cores frequency in the associated Intel(R) Xeon Phi(TM)
 coprocessor in *uint32_t *voltage* in kHz.
 
-....
-....
+-----------------------------
 
-
-int *mic_alloc_core_util*(struct mic_core_util **cutil); +
+#### int *mic_alloc_core_util*(struct mic_core_util **cutil);
 
 This function allocates a structure that may be used to get the
 Intel(R) Xeon Phi(TM) coprocessor cores utilization date using the
 *mic_update_core_util()* API.
 
-....
-....
+-----------------------------
 
-
-int *mic_free_core_util*(struct mic_core_util *cutil); +
+#### int *mic_free_core_util*(struct mic_core_util *cutil);
 
 This function frees the memory allocated by a previous successful
 mic_alloc_core_util()* call.
 
-....
-....
+-----------------------------
 
-
-int *mic_update_core_util*(struct mic_device *device,
-				struct mic_core_util *cutil); +
+#### int *mic_update_core_util*(struct mic_device *device, struct mic_core_util *cutil);
 
 This function uses a scif call to populate *struct mic_core_util *cutil*
 structure with core utilization information from the Intel(R) Xeon Phi(TM)
@@ -1480,12 +1321,9 @@ accessor functions described below to get the core utilization information.
 
 Most of this information is available in */proc/stat* on the coprocessor.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_threads_core*(struct mic_core_util *cutil,
-					uint16_t *threads_core); +
+#### int *mic_get_threads_core*(struct mic_core_util *cutil, uint16_t *threads_core);
 
 This function returns the number of threads per core in
 *uint16_t *threads_core*. This value is 4 on Intel(R) Xeon Phi(TM)
@@ -1937,12 +1775,9 @@ Note that this version is retrieved using a scif call and is different from the
 *mic_flash_version()* function described above, which returns version
 information from a pre-populated Flash header.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_silicon_sku*(struct mic_device *device, char *sku,
-			size_t *size); +
+#### int *mic_get_silicon_sku*(struct mic_device *device, char *sku, size_t *size);
 
 The SKU of the Intel(R) Xeon Phi(TM) coprocessor specified by
 *struct mic_device *device* is returned in the buffer referenced by
@@ -1953,13 +1788,11 @@ undetermined if the input size is greater than the actual buffer size, or
 if the buffer references a NULL or invalid memory location. The appropriate
 *size* value can be queried by setting its value to 0.
 
-....
-....
+--------------------------------
 
+**Serial Number**
 
-**Serial Number** +
-int *mic_get_serial_number*(struct mic_device *device, char *serial,
-			size_t *size); +
+#### int *mic_get_serial_number*(struct mic_device *device, char *serial, size_t *size);
 
 The serial number of the Intel(R) Xeon Phi(TM) coprocessor board specified by
 *struct mic_device *device* is returned in the buffer referenced by
@@ -1970,12 +1803,9 @@ undetermined if the input size is greater than the actual buffer size, or
 if the buffer references a NULL or invalid memory location. The appropriate
 *size* value can be queried by setting its value to 0.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_power_utilization_info*(struct mic_device *device,
-                                   struct mic_power_util_info **power_info);
+#### int *mic_get_power_utilization_info*(struct mic_device *device, struct mic_power_util_info **power_info);
 
 The Intel(R) Xeon Phi(TM) coprocessor board has many sensors that provide
 information about power utilization within different components. These sensors
@@ -1994,21 +1824,16 @@ was not successful, has already been freed, or is one associated with a closed
 coprocessor may result in undefined behavior.
 
 
-....
-....
+-----------------------------
 
-
-int *mic_free_power_utilization_info*(struct mic_power_util_info *power_info);
+#### int *mic_free_power_utilization_info*(struct mic_power_util_info *power_info);
 
 This function frees memory allocated by a previous, successful
 *mic_get_power_utilization_info()* call.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_total_power_readings_w0*(struct mic_power_util_info *power_info,
-                                    uint32_t *power);
+#### int *mic_get_total_power_readings_w0*(struct mic_power_util_info *power_info, uint32_t *power);
 
 This function returns the power utilized in Window 0 in *uint32_t *power*
 for the associated Intel(R) Xeon Phi(TM) coprocessor. The status of this
@@ -2020,12 +1845,9 @@ TBD
 
 ////
 
-....
-....
+-----------------------------
 
-
-int *mic_get_total_power_sensor_sts_w0*(struct mic_power_util_info *power_info,
-                                      uint32_t *status);
+#### int *mic_get_total_power_sensor_sts_w0*(struct mic_power_util_info *power_info, uint32_t *status);
 
 This function returns the status of the Window 0 power utilization register of
 the associated Intel(R) Xeon Phi(TM) coprocessor in *uint32_t *status*.
@@ -2036,12 +1858,9 @@ TBD
 
 ////
 
-....
-....
+-----------------------------
 
-
-int *mic_get_total_power_readings_w1*(struct mic_power_util_info *power_info,
-                                    uint32_t *power);
+#### int *mic_get_total_power_readings_w1*(struct mic_power_util_info *power_info, uint32_t *power);
 
 This function returns the power utilized in Window 1 in *uint32_t *power*
 for the associated Intel(R) Xeon Phi(TM) coprocessor board. The status of this
@@ -2053,12 +1872,9 @@ TBD
 
 ////
 
-....
-....
+-----------------------------
 
-
-int *mic_get_total_power_sensor_sts_w1*(struct mic_power_util_info *power_info,
-                                      uint32_t *status);
+#### int *mic_get_total_power_sensor_sts_w1*(struct mic_power_util_info *power_info, uint32_t *status);
 
 This function returns the status of the Window 1 power utilization sensor for
 the associated Intel(R) Xeon Phi(TM) coprocessor in *uint32_t *status*.
@@ -2069,12 +1885,9 @@ TBD
 
 ////
 
-....
-....
+-----------------------------
 
-
-int *mic_get_inst_power_readings*(struct mic_power_util_info *power_info,
-                                uint32_t *power);
+#### int *mic_get_inst_power_readings*(struct mic_power_util_info *power_info, uint32_t *power);
 
 This function returns instantaneous power utilization in
 *uint32_t *power* for the associated Intel(R) Xeon Phi(TM) coprocessor.
@@ -2086,12 +1899,9 @@ TBD
 
 ////
 
-....
-....
+-----------------------------
 
-
-int *mic_get_inst_power_sensor_sts*(struct mic_power_util_info *power_info,
-                                  uint32_t *status); +
+#### int *mic_get_inst_power_sensor_sts*(struct mic_power_util_info *power_info, uint32_t *status);
 
 This function returns the status of the instantaneous power readings register of
 the associated Intel(R) Xeon Phi(TM) coprocessor in *uint32_t *status*.
@@ -2527,12 +2337,9 @@ TBD
 
 ////
 
-....
-....
+-----------------------------
 
-
-int *mic_get_memory_utilization_info*(struct mic_device *device,
-                                    struct mic_memory_util_info **memory);
+#### int *mic_get_memory_utilization_info*(struct mic_device *device, struct mic_memory_util_info **memory);
 
 This function returns a handle in *struct mic_memory_util_info **memory*
 that may be used by accessor functions described below to get memory utilization
@@ -2554,51 +2361,37 @@ has not already been released, or was not returned by a previous successful call
 to *mic_get_pci_config()*; or the associated *struct mic_device *device*
 was not subsequently closed. Otherwise, their behavior is undefined.
 
-....
-....
+-----------------------------
 
-
-int *mic_free_memory_utilization_info*(struct mic_memory_util_info *memory);
+#### int *mic_free_memory_utilization_info*(struct mic_memory_util_info *memory);
 
 This function frees resources allocated by a previous
 *mic_get_memory_utilization_info()* call.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_total_memory_size*(struct mic_memory_util_info *memory,
-                              uint32_t *total_size);
+#### int *mic_get_total_memory_size*(struct mic_memory_util_info *memory, uint32_t *total_size);
 
 This function returns the total memory size, as known to kernel, running on the
 associated Intel(R) Xeon Phi(TM) coprocessor, in *uint32_t *total_size*.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_available_memory_size*(struct mic_memory_util_info *memory,
-                                  uint32_t *avail_size);
+#### int *mic_get_available_memory_size*(struct mic_memory_util_info *memory, uint32_t *avail_size);
 
 This function returns the size of free memory on the associated
 Intel(R) Xeon Phi(TM) coprocessor in *uint32_t *avail_size*.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_memory_buffers_size*(struct mic_memory_util_info *memory,
-                                uint32_t *bufs);
+#### int *mic_get_memory_buffers_size*(struct mic_memory_util_info *memory, uint32_t *bufs);
 
 This function returns the amount of memory used in kernel buffers on the
 associated Intel(R) Xeon Phi(TM) coprocessor in *uint32_t *bufs*.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_power_limit*(struct mic_device *device,
-				struct mic_power_limit **limit);
+#### int *mic_get_power_limit*(struct mic_device *device, struct mic_power_limit **limit);
 
 This function returns a handle in *struct mic_power_limit **limit*. It
 may be used by accessor functions described below to get various Power Limit
@@ -2626,67 +2419,51 @@ TBD: Check accessor functions description
 
 ////
 
-....
-....
+-----------------------------
 
-
-int *mic_free_power_limit*(struct mic_power_limit *limit);
+#### int *mic_free_power_limit*(struct mic_power_limit *limit);
 
 This function frees memory and resources allocated by a previous, successful
 *mic_get_power_limit()* call.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_power_phys_limit*(struct mic_power_limit *limit,
-						uint32_t *phys_lim);
+#### int *mic_get_power_phys_limit*(struct mic_power_limit *limit, uint32_t *phys_lim);
 
 This function returns the physical power limit on the associated
 Intel(R) Xeon Phi(TM) coprocessor in *uint32_t *phys_lim*.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_power_hmrk*(struct mic_power_limit *limit, uint32_t *hmrk);
+#### int *mic_get_power_hmrk*(struct mic_power_limit *limit, uint32_t *hmrk);
 
 This function returns the highest instantaneous power used on the associated
 Intel(R) Xeon Phi(TM) coprocessor in *uint32_t *hmrk*.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_power_lmrk*(struct mic_power_limit *limit, uint32_t *lmrk);
+#### int *mic_get_power_lmrk*(struct mic_power_limit *limit, uint32_t *lmrk);
 
 This function returns the lowest instantaneous power used on the associated
 Intel(R) Xeon Phi(TM) coprocessor in *uint32_t *lmrk*.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_time_window0*(struct mic_power_limit *limit, uint32_t *time_window);
+#### int *mic_get_time_window0*(struct mic_power_limit *limit, uint32_t *time_window);
 
 This function returns the time window level 0 in milliseconds on the associated
 Intel(R) Xeon Phi(TM) coprocessor in *uint32_t *time_window*.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_time_window1*(struct mic_power_limit *limit, uint32_t *time_window);
+#### int *mic_get_time_window1*(struct mic_power_limit *limit, uint32_t *time_window);
 
 This function returns the time window level 1 in milliseconds on the associated
 Intel(R) Xeon Phi(TM) coprocessor in *uint32_t *time_window*.
 
-....
-....
+-----------------------------
 
-
-int *mic_set_power_limit0*(struct mic_device *mdh, uint32_t power,
-							uint32_t time_window);
+#### int *mic_set_power_limit0*(struct mic_device *mdh, uint32_t power, uint32_t time_window);
 
 This function sets the power limit 0. The power limit 0 (hmrk) is set by the
 given *uint32_t *power*, and time_window 0 is set by the given
@@ -2697,12 +2474,9 @@ down to the closest 50 decrement. Also, if time window 0 is not greater than
 50 and less than 1000 or power limit 0 is less than 50 or greater than 400 then
 an E_MIC_RAS_ERROR will be thrown.
 
-....
-....
+-----------------------------
 
-
-int *mic_set_power_limit1*(struct mic_device *mdh, uint32_t power,
-							uint32_t time_window);
+#### int *mic_set_power_limit1*(struct mic_device *mdh, uint32_t power, uint32_t time_window);
 
 This function sets the power limit 1. The power limit 1 (lmrk) is set by the
 given *uint32_t *power*, and time_window 1 is set by the given
@@ -2713,12 +2487,9 @@ down to the closest 50 decrement. Also, if time window 1 is not greater than
 50 and less than 1000 or power limit 1 is less than 50 or greater than 400 then
 an E_MIC_RAS_ERROR will be thrown.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_throttle_state_info*(struct mic_device *device,
-                                struct mic_throttle_state_info **ttl_state);
+#### int *mic_get_throttle_state_info*(struct mic_device *device, struct mic_throttle_state_info **ttl_state);
 
 This function returns a handle in
 *struct mic_throttle_state_info **ttl_state* that may be used by accessor
@@ -2742,105 +2513,76 @@ previous, successful call to *mic_get_throttle_state_info()*, or its associated
 *struct mic_device *device* was not subsequently closed. Otherwise, their
 behavior is undefined.
 
-....
-....
+-----------------------------
 
-
-int *mic_free_throttle_state_info*(struct mic_throttle_state_info *ttl_state);
+#### int *mic_free_throttle_state_info*(struct mic_throttle_state_info *ttl_state);
 
 This function frees resources allocated by a previous, successful call to
 *mic_get_throttle_state_info()*.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_thermal_ttl_active*(struct mic_throttle_state_info *ttl_state,
-                               int *active);
+#### int *mic_get_thermal_ttl_active*(struct mic_throttle_state_info *ttl_state, int *active);
 
 This function returns the state of thermal throttling for the associated
 Intel(R) Xeon Phi(TM) coprocessor in *int *active*. A zero value
 indicates that it is inactive, and a non-zero value indicates that thermal
 throttling is active.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_thermal_ttl_current_len*(struct mic_throttle_state_info *ttl_state,
-                                    uint32_t *current);
+#### int *mic_get_thermal_ttl_current_len*(struct mic_throttle_state_info *ttl_state, uint32_t *current);
 
 This function returns the duration of the current thermal throttling event in
 *uint32_t *current* for the associated Intel(R) Xeon Phi(TM) coprocessor.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_thermal_ttl_count*(struct mic_throttle_state_info *ttl_state,
-                              uint32_t *count);
+#### int *mic_get_thermal_ttl_count*(struct mic_throttle_state_info *ttl_state, uint32_t *count);
 
 This function returns the total count of thermal throttling events in
 *uint32_t *count* for the associated Intel(R) Xeon Phi(TM) coprocessor.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_thermal_ttl_time*(struct mic_throttle_state_info *ttl_state,
-                             uint32_t *time);
+#### int *mic_get_thermal_ttl_time*(struct mic_throttle_state_info *ttl_state, uint32_t *time);
 
 This function returns the total time spent in thermal throttling events in
 *uint32_t *time* for the associated Intel(R) Xeon Phi(TM) coprocessor.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_power_ttl_active*(struct mic_throttle_state_info *ttl_state,
-                             int *active);
+#### int *mic_get_power_ttl_active*(struct mic_throttle_state_info *ttl_state, int *active);
 
 This function returns the state of power throttling for the associated
 Intel(R) Xeon Phi(TM) coprocessor in *int *active*. A zero value
 indicates that it is inactive and a non-zero value indicates that power
 throttling is active.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_power_ttl_current_len*(struct mic_throttle_state_info *ttl_state,
-                                  uint32_t *current);
+#### int *mic_get_power_ttl_current_len*(struct mic_throttle_state_info *ttl_state, uint32_t *current);
 
 This function returns the duration of the current power throttling event in
 *uint32_t *current* for the associated Intel(R) Xeon Phi(TM) coprocessor.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_power_ttl_count*(struct mic_throttle_state_info *ttl_state,
-                            uint32_t *count);
+#### int *mic_get_power_ttl_count*(struct mic_throttle_state_info *ttl_state, uint32_t *count);
 
 This function returns the total time spent in power throttling events in
 *uint32_t *time* for the associated Intel(R) Xeon Phi(TM) coprocessor.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_power_ttl_time*(struct mic_throttle_state_info *ttl_state,
-                           uint32_t *time);
+#### int *mic_get_power_ttl_time*(struct mic_throttle_state_info *ttl_state, uint32_t *time);
 
 This function returns the total time spent in power throttling events in
 *uint32_t *time* for the associated Intel(R) Xeon Phi(TM) coprocessor.
 
-....
-....
+-----------------------------
 
-
-int *mic_get_turbo_state_info*(struct mic_device *device,
-                             struct mic_turbo_info **turbo);
+#### int *mic_get_turbo_state_info*(struct mic_device *device, struct mic_turbo_info **turbo);
 
 This function returns a handle in *struct mic_turbo_info **turbo* that
 may be used by accessor functions described below to get turbo state information
@@ -3131,8 +2873,10 @@ Copyright 2012-2015 Intel Corporation. All Rights Reserved.
 
 Use the following command to create manpage:
 
+```
 :!a2x --doctype manpage --format manpage libmicmgmt.7.txt
+```
 
-TBD: Units of power utilization, memory utilization, power limits, throttling
+**TBD**: Units of power utilization, memory utilization, power limits, throttling
 
 Check turbo state APIs
