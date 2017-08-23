@@ -6,10 +6,6 @@
 #include <miclib.h>
 #include <unistd.h>
 
-#define MAX_DEVICES    (32)
-#define MAX_CORES      (256)
-#define NUM_SAMPLES    (3)
-
 
 int main(void) {
   //
