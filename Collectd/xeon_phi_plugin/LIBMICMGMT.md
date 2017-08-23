@@ -562,7 +562,7 @@ int *mic_free_uos_pm_config*(struct mic_uos_pm_config *pm_config);
 
 In order to access an Intel(R) Xeon Phi(TM) Coprocessor it must first be opened by a call to *mic_open_device()*. +
 
-#### int *mic_open_device*(struct mic_device **device, uint32_t device_num); +
+#### int *mic_open_device*(struct mic_device **device, uint32_t device_num);
 
 The input *device_num* argument must contain the device number *<n>* as it appears in the */sys/class/mic/mic<n>* entry on a Linux machine or in the WMI entry <board_id> for the coprocessor to be accessed on a Microsoft Windows machine. A list of available coprocessors may also be obtained by making a call to *mic_get_devices()*.
 
@@ -574,7 +574,7 @@ Note that this function, and the library in general, guarantees support of up to
 ....
 
 
-int *mic_close_device*(struct mic_device *device); +
+#### int *mic_close_device*(struct mic_device *device);
 
 The input argument *device* refers to the handle returned by a previous
 successful *mic_open_device()* call. This function closes the opened coprocessor
@@ -587,7 +587,7 @@ previous open call.
 ....
 
 
-int *mic_get_devices*(struct mic_devices_list **devices); +
+#### int *mic_get_devices*(struct mic_devices_list **devices);
 
 This function returns the list of coprocessors present on the system in the
 *devices* argument. Note that this structure is dynamically allocated and, when
@@ -599,9 +599,9 @@ to retrieve the individual fields of this list.
 ....
 
 
-int *mic_get_ndevices*(struct mic_devices_list *devices, int *ndevices); +
+#### int *mic_get_ndevices*(struct mic_devices_list *devices, int *ndevices);
 
-int *mic_get_device_at_index*(struct mic_devices_list *devices, int index, int *device); +
+#### int *mic_get_device_at_index*(struct mic_devices_list *devices, int index, int *device);
 
 Upon successful completion of *mic_get_ndevices()* function, the argument
 *ndevices* is returned with the number of Intel(R) Xeon Phi(TM) coprocessors
@@ -625,7 +625,7 @@ functions is undefined.
 ....
 
 
-int *mic_free_devices*(struct mic_devices_list *devices); +
+#### int *mic_free_devices*(struct mic_devices_list *devices);
 
 This function frees the memory allocated by a previous, successful
 *mic_get_devices()* call that was not already freed. Any other input will result
@@ -646,7 +646,7 @@ listed in its description. Otherwise, refer to the *RETURN VALUE* section in the
 ....
 
 
-int *mic_get_device_type*(struct mic_device *device, uint32_t *type); +
+#### int *mic_get_device_type*(struct mic_device *device, uint32_t *type);
 
 This function returns the type of the Intel(R) Xeon Phi(TM) coprocessor to the
 *type* argument. On Linux, the value is an enumeration that is read from the
@@ -658,7 +658,7 @@ value returned is *KNC_ID*.
 ....
 
 
-const char **mic_get_device_name*(struct mic_device *device); +
+#### const char **mic_get_device_name*(struct mic_device *device);
 
 This function returns the name of the coprocessor. On Linux, this is *mic<n>* in
 */sys/class/mic/mic<n>*, which is referenced by the input *device* argument. On
@@ -670,8 +670,7 @@ overwritten by subsequent calls. A value of NULL is returned upon error.
 ....
 
 
-int *mic_get_sysfs_attribute*(struct mic_device *device, const char *name,
-                    char *value, size_t *size); +
+#### int *mic_get_sysfs_attribute*(struct mic_device *device, const char *name, char *value, size_t *size);
 
 If successful, this function will return the value of the specified
 sysfs attribute.  The behavior is undetermined if the input size is greater
@@ -688,7 +687,7 @@ fuction will return E_MIC_NOT_IMPLEMENTED.
 ....
 
 
-const char **mic_get_error_string(void); +
+#### const char **mic_get_error_string(void);
 
 This function may be used upon failure to get a more verbose message from the
 library. In failure state it returns a string that specifies the object and the
