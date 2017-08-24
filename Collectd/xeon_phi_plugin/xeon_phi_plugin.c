@@ -129,15 +129,15 @@ static int my_read (void) {
   unsigned int card_num;
 
 	for (card_num = 0; card_num < ncards; card_num++) {
-    int card, total_util;
+    int card;
     struct mic_power_util_info *pinfo;
     uint32_t pwr;
     struct mic_memory_util_info *memory;
     uint32_t total_size, avail_size;
     struct mic_thermal_info *thermal;
     uint32_t temp;
-    struct mic_core_util *cutil = NULL;
-    uint64_t idle_sum, sys_sum, nice_sum, user_sum;
+    //struct mic_core_util *cutil = NULL;
+    //uint64_t idle_sum, sys_sum, nice_sum, user_sum;
 
 		/* Get card at index card_num */
     if (mic_get_device_at_index(mdl, card_num, &card) != E_MIC_SUCCESS) {
@@ -175,8 +175,8 @@ static int my_read (void) {
     else if (mic_get_inst_power_readings(pinfo, &pwr) != E_MIC_SUCCESS) {
       fprintf(stderr, "Error: Failed to get instant power readings: %s\n", mic_get_device_name(mdh));
     }
-		else if (submitValue((pwr / 1000000), "power", i) != 0) {
-			plugin_log(LOG_WARNING("xeonphi_plugin plugin: Dispatching a value failed.");
+		else if (submitValue((pwr / 1000000), "power", card_num) != 0) {
+			plugin_log(LOG_WARNING, "xeonphi_plugin plugin: Dispatching a value failed.");
 		}
     (void)mic_free_power_utilization_info(pinfo);
 
@@ -206,8 +206,8 @@ static int my_read (void) {
     else if (mic_get_available_memory_size(memory, &avail_size) != E_MIC_SUCCESS) {
       fprintf(stderr, "Error: Failed to get available_memory_size: %s\n", mic_get_device_name(mdh));
     }
-		else if (submitValue(((total_size-avail_size) / 1024), "memory", i) != 0) {
-			plugin_log(LOG_WARNING("xeonphi_plugin plugin: Dispatching a value [memory] failed.");
+		else if (submitValue(((total_size-avail_size) / 1024), "memory", card_num) != 0) {
+			plugin_log(LOG_WARNING, "xeonphi_plugin plugin: Dispatching a value [memory] failed.");
 		}
 		(void)mic_free_memory_utilization_info(memory);
 
@@ -224,8 +224,8 @@ static int my_read (void) {
     else if (mic_get_die_temp(thermal, &temp) != E_MIC_SUCCESS) {
       fprintf(stderr, "Error: Failed to get instant thermal readings: %s\n", mic_get_device_name(mdh));
     }
-		else if (submitValue(temp, "temperature", i) != 0) {
-			plugin_log(LOG_WARNING("xeonphi_plugin plugin: Dispatching a value failed.");
+		else if (submitValue(temp, "temperature", card_num) != 0) {
+			plugin_log(LOG_WARNING, "xeonphi_plugin plugin: Dispatching a value failed.");
 		}
     (void)mic_free_thermal_info(thermal);
 
@@ -261,8 +261,6 @@ static void my_log(int severity, const char *msg, user_data_t *ud) {
  * This function is called before shutting down collectd.
  */
 static int my_shutdown(void) {
-	nvmlReturn_t result;
-
 	/* close sockets, free data structures, ... */
 	(void)mic_free_devices(mdl);
 
