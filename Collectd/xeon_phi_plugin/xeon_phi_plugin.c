@@ -63,32 +63,30 @@ static int my_init(void) {
 	/* open sockets, initialize data structures, ... */
 	ret = mic_get_devices(&mdl);
   if (ret == E_MIC_DRIVER_NOT_LOADED) {
-    fprintf(stderr, "Error: The driver is not loaded! ");
-    fprintf(stderr, "Load the driver before using this tool.\n");
+    printf("Error: The driver is not loaded! Load the driver before using this tool.\n");
     return 1; /* Return a general error to the shell */
   }
   else if (ret == E_MIC_ACCESS) {
-    fprintf(stderr, "Error: Access is denied to the driver! ");
-    fprintf(stderr, "Do you have permissions to access the driver?\n");
+    printf("Error: Access is denied to the driver! Do you have permissions to access the driver?\n");
     return 1; /* Return a general error to the shell */
   }
   else if (ret != E_MIC_SUCCESS) {
-    fprintf(stderr, "Failed to get cards list: %s: %s\n", mic_get_error_string(), strerror(errno));
+    printf("Failed to get cards list: %s: \n", mic_get_error_string());
     return 1;
   }
 
   if (mic_get_ndevices(mdl, &ncards) != E_MIC_SUCCESS) {
-    fprintf(stderr, "Error: Failed to get number of cards! ");
+    printf("Error: Failed to get number of cards! ");
     (void)mic_free_devices(mdl);
     return 2;
   }
 
   if (ncards == 0) {
-    fprintf(stderr, "Error: No MIC card found! ");
+    printf("Error: No MIC card found! ");
     (void)mic_free_devices(mdl);
     return 3;
   }
-  printf("    Found %d ncards \n", ncards);
+  printf("Found %d ncards \n", ncards);
 
 	/* A return value != 0 indicates an error and causes the plugin to be disabled. */
   return 0;
@@ -141,24 +139,24 @@ static int my_read (void) {
 
 		/* Get card at index card_num */
     if (mic_get_device_at_index(mdl, card_num, &card) != E_MIC_SUCCESS) {
-        fprintf(stderr, "Error: Failed to get card at index %d: %s: %s\n", card_num, mic_get_error_string(), strerror(errno));
+        printf("Error: Failed to get card at index %d: %s\n", card_num, mic_get_error_string());
         mic_free_devices(mdl);
         return 1;
     }
 
     if (mic_open_device(&mdh, card) != E_MIC_SUCCESS) {
-        fprintf(stderr, "Error: Failed to open card %d: %s: %s\n", card_num, mic_get_error_string(), strerror(errno));
+        printf("Error: Failed to open card %d: %s\n", card_num, mic_get_error_string());
         return 2;
     }
 
     if (mic_get_device_type(mdh, &device_type) != E_MIC_SUCCESS) {
-        fprintf(stderr, "Error: Failed to get device type %s! ", mic_get_device_name(mdh));
+        printf("Error: Failed to get device type %s! ", mic_get_device_name(mdh));
         (void)mic_close_device(mdh);
         return 3;
     }
 
     if (device_type != KNC_ID) {
-      fprintf(stderr, "Error: Unknown device Type: %u\n", device_type);
+      printf("Error: Unknown device Type: %u\n", device_type);
       (void)mic_close_device(mdh);
       return 4;
     }
@@ -170,10 +168,10 @@ static int my_read (void) {
      *    int *mic_free_power_utilization_info*(struct mic_power_util_info *power_info);
 		 ***************************************************************************************/
     if (mic_get_power_utilization_info(mdh, &pinfo) != E_MIC_SUCCESS) {
-      fprintf(stderr, "Error: Failed to get power utilization information: %s\n", mic_get_device_name(mdh));
+      printf("Error: Failed to get power utilization information: %s\n", mic_get_device_name(mdh));
     }
     else if (mic_get_inst_power_readings(pinfo, &pwr) != E_MIC_SUCCESS) {
-      fprintf(stderr, "Error: Failed to get instant power readings: %s\n", mic_get_device_name(mdh));
+      printf("Error: Failed to get instant power readings: %s\n", mic_get_device_name(mdh));
     }
 		else if (submitValue((pwr / 1000000), "power", card_num) != 0) {
 			plugin_log(LOG_WARNING, "xeonphi_plugin plugin: Dispatching a value failed.");
@@ -198,13 +196,13 @@ static int my_read (void) {
       *    int *mic_free_memory_utilization_info*(struct mic_memory_util_info *memory);
  		 ***************************************************************************************/
     if (mic_get_memory_utilization_info(mdh, &memory) != E_MIC_SUCCESS) {
-      fprintf(stderr, "Error: Failed to get memory utilization information: %s\n", mic_get_device_name(mdh));
+      printf("Error: Failed to get memory utilization information: %s\n", mic_get_device_name(mdh));
     }
     else if (mic_get_total_memory_size(memory, &total_size) != E_MIC_SUCCESS) {
-      fprintf(stderr, "Error: Failed to get total_memory_size: %s\n", mic_get_device_name(mdh));
+      printf("Error: Failed to get total_memory_size: %s\n", mic_get_device_name(mdh));
     }
     else if (mic_get_available_memory_size(memory, &avail_size) != E_MIC_SUCCESS) {
-      fprintf(stderr, "Error: Failed to get available_memory_size: %s\n", mic_get_device_name(mdh));
+      printf("Error: Failed to get available_memory_size: %s\n", mic_get_device_name(mdh));
     }
 		else if (submitValue(((total_size-avail_size) / 1024), "memory", card_num) != 0) {
 			plugin_log(LOG_WARNING, "xeonphi_plugin plugin: Dispatching a value [memory] failed.");
@@ -219,10 +217,10 @@ static int my_read (void) {
      *    int *mic_free_thermal_info*(struct mic_thermal_info *thermal);
  		 ***************************************************************************************/
     if (mic_get_thermal_info(mdh, &thermal) != E_MIC_SUCCESS) {
-      fprintf(stderr, "Error: Failed to get thermal information: %s\n", mic_get_device_name(mdh));
+      printf("Error: Failed to get thermal information: %s\n", mic_get_device_name(mdh));
     }
     else if (mic_get_die_temp(thermal, &temp) != E_MIC_SUCCESS) {
-      fprintf(stderr, "Error: Failed to get instant thermal readings: %s\n", mic_get_device_name(mdh));
+      printf("Error: Failed to get instant thermal readings: %s\n", mic_get_device_name(mdh));
     }
 		else if (submitValue(temp, "temperature", card_num) != 0) {
 			plugin_log(LOG_WARNING, "xeonphi_plugin plugin: Dispatching a value failed.");
