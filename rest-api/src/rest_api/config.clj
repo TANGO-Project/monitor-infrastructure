@@ -22,6 +22,7 @@
   :monitored-series {
     :NVIDIA-GPUs  "monitoring_value"   ; NVIDIA plugin that collects 'power'
     :CPU-PLUGIN   "cpu_value"          ; CPU plugin that collects 'usage' and more metrics...
+    :XEON-PHI     "xeonphi_value"
   }
   ;; interval / time for averages (in queries)
   :take-last-t    "30s"})
@@ -51,6 +52,8 @@
 (def SERIE-NVIDIA-GPUs (monitored-series :NVIDIA-GPUs))
 (def SERIE-CPU-PLUGIN (monitored-series :CPU-PLUGIN))
 (def SERIE-NVIDIA-GPUs-total-metrics (conf :NVIDIA-GPUs-total-metrics))
+(def SERIE-XEON-PHI (monitored-series :XEON-PHI))
+(def SERIE-XEON-PHI-total-metrics (conf :XEON-PHI-total-metrics))
 ;; t
 (def TAKE-LAST-T (monitored-series :take-last-t))
 

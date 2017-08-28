@@ -14,13 +14,6 @@
       {:res "SUCCESS" :response response})
     (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e}))))
 
-;; FUNCTION: get-val-node
-;; EXAMPLE: (get-val-node "nvidia_value" "max" "ns50.bullx" 0 "5m")
-(defn get-val-node ""
-  [metric metric-value node instance time-period]
-  (query (str "SELECT " metric-value "(value) FROM " metric " WHERE host = '" node "' "
-              "AND type = '" instance "' AND time > now() - " time-period ";")))
-
 ;; FUNCTION: get-val-node-v2
 ;; type = objects, percent, power
 ;; instance = 0, 1

@@ -181,85 +181,42 @@
 ;;    Response:
 ;;    {
 ;;    	"power-stats": {
-;;    		"ns50.bullx": {
+;;    		"ns53.bullx": {
 ;;    			"cpu_value": "not implemented",
-;;    			"gpu0": {
+;;    			"xeon0": {
 ;;    				"power": {
-;;    					"mean": 29.79611899425668,
-;;    					"min": 29.663000106811523,
-;;    					"max": 57.42399978637695
+;;    					"mean": 84.95901639344262,
+;;    					"min": 41,
+;;    					"max": 121
 ;;    				},
 ;;    				"usage": {
-;;    					"mean": 0,
-;;    					"min": 0,
-;;    					"max": 0
+;;    					"mean": "NOT FOUND",
+;;    					"min": "NOT FOUND",
+;;    					"max": "NOT FOUND"
 ;;    				},
 ;;    				"apps": {
-;;    					"mean": 0,
-;;    					"min": 0,
-;;    					"max": 0
+;;    					"mean": "NOT FOUND",
+;;    					"min": "NOT FOUND",
+;;    					"max": "NOT FOUND"
+;;    				},
+;;    				"temperature": {
+;;    					"mean": 47.09836065573771,
+;;    					"min": 37,
+;;    					"max": 50
+;;    				},
+;;    					"mean": 292.89344262295083,
+;;    				"memory": {
+;;    					"min": 292,
+;;    					"max": 294
 ;;    				}
 ;;    			},
-;;    			"gpu1": {
-;;    				"power": {
-;;    					"mean": 30.316579741364194,
-;;    					"min": 30.19300079345703,
-;;    					"max": 61.058998107910156
-;;    				},
-;;    				"usage": {
-;;    					"mean": 0.014404852160727824,
-;;    					"min": 0,
-;;    					"max": 76
-;;    				},
-;;    				"apps": {
-;;    					"mean": 0,
-;;    					"min": 0,
-;;    					"max": 0
-;;    				}
+;;    			"xeon1": {
+;;    				...
 ;;    			}
-;;    		}
 ;;    	}
 ;;    }
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; FUNCTION: extract-result
-;; EXAMPLE: (extract-result "nvidia_value" "ns50.bullx" 0 "max" "5m")
-(defn- extract-result ""
-  [metric host instance type time]
-  (let [res (queries/get-val-node metric type host instance time)]
-    (if (= "SUCCESS" (res :res))
-      (queries-resp-parser/process-response-power-stats res)
-      nil)))
-
-;; FUNCTION: get-power-stats
-(defn get-power-stats ""
-  [host time endTime]
-  (ring-resp/response
-    (try
-      (let [metrics-for-host  (remove nil?
-                                (for [[k v] @MONITORED-HOSTS-SERIES]
-                                  (when (some #(= host %) v) k)))
-            instances-per-metric  (into {}
-                                    (for [x metrics-for-host]
-                                      {x (get-in @HOSTS-TAGS-INSTANCES [x host])}))]
-        {:power-stats
-          { host
-            (into {}
-              (remove nil?
-                (for [[k v] instances-per-metric]
-                  (cond
-                    ;; NVIDIA probes
-                    ;;    "nvidia_value" {"ns50.bullx" 6} ==> 6 / 3 (power, percent, objects): defined in (config/SERIE-NVIDIA-GPUs-total-metrics)
-                    (= k config/SERIE-NVIDIA-GPUs)  (into {}
-                                                      (for [i (range 0 (/ v config/SERIE-NVIDIA-GPUs-total-metrics))]
-                                                        { (keyword (str "gpu" i))
-                                                          [:max   (extract-result k host i "max" time)
-                                                           :min   (extract-result k host i "min" time)
-                                                           :mean  (extract-result k host i "mean" time)]}))
-                    ;; Others: not implemented
-                    :else                           {k "not implemented"}))))}})
-      (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e})))))
 
 ;; FUNCTION: get-power-stats-v2
 ;; EXAMPLE: (get-power-stats-v2 "ns50.bullx" "2016-08-02T00:00:00Z" "2017-08-03T00:00:00Z")
@@ -286,20 +243,61 @@
                                                           (let [query (queries/get-val-node-v2 k host i t1 t2)
                                                                 power-values (queries-resp-parser/values-get-val-node-v2 query "power")
                                                                 usage-values (queries-resp-parser/values-get-val-node-v2 query "percent")
-                                                                apps-values (queries-resp-parser/values-get-val-node-v2 query "objects")]
-                                                            {:power
-                                                              {:mean (nth power-values 2)
-                                                               :min (nth power-values 3)
-                                                               :max (last power-values)}
-                                                             :usage
-                                                              {:mean (nth usage-values 2)
-                                                               :min (nth usage-values 3)
-                                                               :max (last usage-values)}
-                                                             :apps
-                                                              {:mean (nth apps-values 2)
-                                                               :min (nth apps-values 3)
-                                                               :max (last apps-values)}
+                                                                apps-values (queries-resp-parser/values-get-val-node-v2 query "objects")
+                                                                temperature-values (queries-resp-parser/values-get-val-node-v2 query "temperature")
+                                                                memory-values (queries-resp-parser/values-get-val-node-v2 query "memory")]
+                                                            { :power
+                                                                {:mean (common/get-value-from-vector power-values 2)
+                                                                 :min (common/get-value-from-vector power-values 3)
+                                                                 :max (common/get-last-value-from-vector power-values)}
+                                                              :usage
+                                                                {:mean (common/get-value-from-vector usage-values 2)
+                                                                 :min (common/get-value-from-vector usage-values 3)
+                                                                 :max (common/get-last-value-from-vector usage-values)}
+                                                              :apps
+                                                                {:mean (common/get-value-from-vector apps-values 2)
+                                                                 :min (common/get-value-from-vector apps-values 3)
+                                                                 :max (common/get-last-value-from-vector apps-values)}
+                                                              :temperature
+                                                                {:mean (common/get-value-from-vector temperature-values 2)
+                                                                 :min (common/get-value-from-vector temperature-values 3)
+                                                                 :max (common/get-last-value-from-vector temperature-values)}
+                                                              :memory
+                                                                {:mean (common/get-value-from-vector memory-values 2)
+                                                                 :min (common/get-value-from-vector memory-values 3)
+                                                                 :max (common/get-last-value-from-vector memory-values)}
                                                             })}))
+                      ;; XEON-PHI probes
+                      (= k config/SERIE-XEON-PHI)  (into {}
+                                                        (for [i (range 0 (/ v config/SERIE-XEON-PHI-total-metrics))]
+                                                          { (keyword (str "xeon" i))
+                                                            (let [query (queries/get-val-node-v2 k host i t1 t2)
+                                                                  power-values (queries-resp-parser/values-get-val-node-v2 query "power")
+                                                                  usage-values (queries-resp-parser/values-get-val-node-v2 query "percent")
+                                                                  apps-values (queries-resp-parser/values-get-val-node-v2 query "objects")
+                                                                  temperature-values (queries-resp-parser/values-get-val-node-v2 query "temperature")
+                                                                  memory-values (queries-resp-parser/values-get-val-node-v2 query "memory")]
+                                                              { :power
+                                                                  {:mean (common/get-value-from-vector power-values 2)
+                                                                   :min (common/get-value-from-vector power-values 3)
+                                                                   :max (common/get-last-value-from-vector power-values)}
+                                                                :usage
+                                                                  {:mean (common/get-value-from-vector usage-values 2)
+                                                                   :min (common/get-value-from-vector usage-values 3)
+                                                                   :max (common/get-last-value-from-vector usage-values)}
+                                                                :apps
+                                                                  {:mean (common/get-value-from-vector apps-values 2)
+                                                                   :min (common/get-value-from-vector apps-values 3)
+                                                                   :max (common/get-last-value-from-vector apps-values)}
+                                                                :temperature
+                                                                  {:mean (common/get-value-from-vector temperature-values 2)
+                                                                   :min (common/get-value-from-vector temperature-values 3)
+                                                                   :max (common/get-last-value-from-vector temperature-values)}
+                                                                :memory
+                                                                  {:mean (common/get-value-from-vector memory-values 2)
+                                                                   :min (common/get-value-from-vector memory-values 3)
+                                                                   :max (common/get-last-value-from-vector memory-values)}
+                                                              })}))
                     ;;
                     (= k config/SERIE-CPU-PLUGIN)   {k "not implemented"}
 
@@ -455,11 +453,35 @@
           (for [i (range 0 total-gpus)]
             (let [res-i-power (queries-resp-parser/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "power" i)
                   res-i-percent (queries-resp-parser/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "percent" i)
-                  res-i-objects (queries-resp-parser/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "objects" i)]
+                  res-i-objects (queries-resp-parser/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "objects" i)
+                  res-i-temperature (queries-resp-parser/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "temperature" i)
+                  res-i-memory (queries-resp-parser/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "memory" i)]
               {(keyword (str "GPU" i)) {
-                  :POWER_LAST_VALUE         (common/round-number (second res-i-power) :precision 3)
-                  :USAGE_LAST_VALUE         (common/round-number (second res-i-percent) :precision 3)
-                  :APPS_RUNNING_LAST_VALUE  (common/round-number (second res-i-objects) :precision 3)
+                  :POWER_LAST_VALUE         (common/round-number (common/get-second-value-from-vector res-i-power) :precision 3)
+                  :USAGE_LAST_VALUE         (common/round-number (common/get-second-value-from-vector res-i-percent) :precision 3)
+                  :APPS_RUNNING_LAST_VALUE  (common/round-number (common/get-second-value-from-vector res-i-objects) :precision 3)
+                  :TEMPERATURE_LAST_VALUE   (common/round-number (common/get-second-value-from-vector res-i-temperature) :precision 3)
+                  :MEMORY_LAST_VALUE        (common/round-number (common/get-second-value-from-vector res-i-memory) :precision 3)
+              }}))))
+      nil)))
+
+;; FUNCTION: get-xeon-values
+(defn- get-xeon-values ""
+  [host]
+  (let [query-res (queries/get-lastval-NVIDIA-PLUGIN-v2 config/SERIE-XEON-PHI host)]
+    (if (= "SUCCESS" (query-res :res))
+      (let [total-gpus  (/ (count ((first (get-in query-res [:response :results])) :series)) config/SERIE-XEON-PHI-total-metrics)]
+        (into {}
+          (for [i (range 0 total-gpus)]
+            (let [res-i-power (queries-resp-parser/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "power" i)
+                  res-i-percent (queries-resp-parser/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "percent" i)
+                  res-i-temperature (queries-resp-parser/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "temperature" i)
+                  res-i-memory (queries-resp-parser/values-get-lastval-NVIDIA-PLUGIN-v2 query-res "memory" i)]
+              {(keyword (str "XEON" i)) {
+                  :POWER_LAST_VALUE         (common/get-second-value-from-vector res-i-power)
+                  :USAGE_LAST_VALUE         (common/get-second-value-from-vector res-i-percent)
+                  :TEMPERATURE_LAST_VALUE   (common/get-second-value-from-vector res-i-temperature)
+                  :MEMORY_LAST_VALUE        (common/get-second-value-from-vector res-i-memory)
               }}))))
       nil)))
 
@@ -482,6 +504,28 @@
     {:HAS_ACCELERATOR  false
      :HAS_GPU          false
      :GPU_NAME         ""
+     :GPU_COUNT        0
+     :GPU_USED         "NOT_IMPLEMENTED"}))
+
+;; FUNCTION: gen-info-XEON
+(defn- gen-info-XEON "Generates info map for XEON PHI measurements of a given host"
+  [h]
+  (when (some #(= h %) ((deref MONITORED-HOSTS-SERIES) config/SERIE-XEON-PHI))
+    { ;:HAS_ACCELERATOR  true
+      ;:HAS_GPU          true
+      ;:GPU_NAME         "NVIDIA"
+      :XEON_COUNT       (/ (get-in (deref HOSTS-TAGS-INSTANCES) [config/SERIE-XEON-PHI h]) config/SERIE-XEON-PHI-total-metrics)
+      ;:GPU_USED         "NOT_IMPLEMENTED"
+      :XEON              (get-xeon-values h)}))
+
+;; FUNCTION: gen-map-response-info-XEON
+(defn- gen-map-response-info-XEON "Generates response map with all info"
+  [host]
+  (if-let [res (gen-info-XEON host)]
+    res
+    {;:HAS_ACCELERATOR  false
+     ;:HAS_GPU          false
+     ;:GPU_NAME         ""
      :GPU_COUNT        0
      :GPU_USED         "NOT_IMPLEMENTED"}))
 
@@ -575,10 +619,11 @@
       {:monitored_hosts (deref MONITORED-HOSTS)
        :hosts_info (into {}
                      (let [res-info-NVIDIA (gen-map-response-info-NVIDIA host)          ;;accelerators: NVIDIA/GPUs TODO
+                           res-info-XEON   (gen-map-response-info-XEON host)
                            res-info-CPU    (gen-map-response-info-CPU host true t)      ;; CPU
                            res-apps        (gen-map-response-no-info-APPS)              ;; applications metrics TODO
                            res-mics        (gen-map-response-no-info-MICS)]             ;; accelerators: MICS TODO
-                       {host (merge res-info-NVIDIA res-info-CPU res-apps res-mics)}))}
+                       {host (merge res-info-NVIDIA res-info-XEON res-info-CPU res-apps res-mics)}))}
       (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e})))))
 
 ;; FUNCTION: get-info-stats
@@ -590,10 +635,11 @@
        :hosts_info (into {}
                      (for [host (deref MONITORED-HOSTS)]
                        (let [res-info-NVIDIA (gen-map-response-info-NVIDIA host)            ;; accelerators: NVIDIA/GPUs TODO
+                             res-info-XEON   (gen-map-response-info-XEON host)
                              res-info-CPU    (gen-map-response-info-CPU host false nil)     ;; CPU
                              res-apps        (gen-map-response-no-info-APPS)                ;; applications metrics TODO
                              res-mics        (gen-map-response-no-info-MICS)]               ;; accelerators: MICS TODO
-                         {host (merge res-info-NVIDIA res-info-CPU res-apps res-mics)})))}
+                         {host (merge res-info-NVIDIA res-info-XEON res-info-CPU res-apps res-mics)})))}
       (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e})))))
 
 ;; FUNCTION: get-info-stats-host
@@ -603,8 +649,9 @@
     (try
       {:hosts_info (into {}
                      (let [res-info-NVIDIA (gen-map-response-info-NVIDIA host)            ;; accelerators: NVIDIA/GPUs TODO
+                           res-info-XEON   (gen-map-response-info-XEON host)
                            res-info-CPU    (gen-map-response-info-CPU host false nil)     ;; CPU
                            res-apps        (gen-map-response-no-info-APPS)                ;; applications metrics TODO
                            res-mics        (gen-map-response-no-info-MICS)]               ;; accelerators: MICS TODO
-                       {host (merge res-info-NVIDIA res-info-CPU res-apps res-mics)}))}
+                       {host (merge res-info-NVIDIA res-info-XEON res-info-CPU res-apps res-mics)}))}
       (catch Exception e (do (logs/log-error e) {:res "ERROR" :error e})))))

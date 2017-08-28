@@ -78,3 +78,28 @@
 ;; FUNCTION: parse-int
 (defn parse-int [s]
   (Integer/parseInt (re-find #"\A-?\d+" s)))
+
+;; MISC ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; FUNCTION: get-value-from-vector
+(defn get-value-from-vector ""
+  [v pos]
+  (if (nil? v)
+    "NOT FOUND"
+    (nth v pos)))
+
+;; FUNCTION: get-value-from-vector
+(defn get-last-value-from-vector ""
+  [v]
+  (if (nil? v)
+    "NOT FOUND"
+    (last v)))
+
+;; FUNCTION: get-second-value-from-vector
+(defn get-second-value-from-vector ""
+  [v]
+  (try
+    (if (nil? v)
+      "NOT FOUND"
+      (round-number (second v) :precision 3))
+    (catch Exception e (do (logs/log-exception e) 0))))
