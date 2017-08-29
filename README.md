@@ -30,8 +30,19 @@ This component relies on [Collectd](https://collectd.org/), which will be used t
 
 Available collection of probes to measure energy in heterogeneous hardware for the [TANGO project](http://tango-project.eu):
 1. [NVIDIA collectd plugin](Collectd/nvidia_plugin) :white_check_mark:
+    - power
+    - temperature
+    - memory used
+    - usage
+    - processes running
 
-2. [Xeon Phi collectd plugin](Collectd/xeon_phi_plugin) (needs to be tested)
+
+2. [Xeon Phi collectd plugin](Collectd/xeon_phi_plugin) :white_check_mark:
+    - power
+    - temperature
+    - memory used
+    - usage
+
 
 3. [IPMI plugin from collectd](Collectd/ipmi_plugin) (needs to be tested)
 

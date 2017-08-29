@@ -14,6 +14,16 @@ This plugin relies in the [NVIDIA Management Library](https://developer.nvidia.c
       * NVIDIA Quadro ®Line: All other current and previous generation Quadro-branded parts
       * NVIDIA GeForce ®Line: All current and previous generation GeForce-branded parts
 
+### Metrics collected
+
+This plugin gets the values from the following metrics:
+- power
+- temperature
+- memory used
+- usage
+- processes running
+
+
 ## License
 
   &copy; Atos 2016

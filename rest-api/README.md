@@ -38,87 +38,164 @@ lein uberwar
 
 ### API methods:
 
-1. Get REST API status
+- [GET "/api"](#1.)
+- [GET "/api/influxdb-url"](#2.)
+- [POST "/api/influxdb-url"](#3.)
+- [GET "/api/db"](#4.)
+- [POST "/api/db"](#5.)
+- [GET "/api/ping"](#6.)
+- [GET "/api/monitored/hosts"](#7.)
+- [GET "/api/monitored/series"](#8.)
+- [GET "/api/monitored/hosts-series"](#9.)
+- [GET "/api/power-stats/:host/:t1/:t2"](#10.)
+- [GET "/api/info-stats/:host"](#11.)
+- [GET "/api/info-stats"](#12.)
+- [GET "/api/info-stats-with-avg/:host/:t"](#13.)
+- [GET "/api/info-stats-with-avg"](#14.)
+
+#### 1.
 
 ```
 GET "/api"
 ```
 
-Response:
+Get REST API status
+
+**Example:**
+
+```
+http://localhost:8082/api
+```
+
+**Response:**
 
 ```json
-{"status":"Rest Api Service running [influxdb:http://192.168.252.41:8086]...","message":"","response":"","version":"0.1.0"}
+{
+  "status":"Rest Api Service running [influxdb:http://192.168.252.41:8086]...",
+  "message":"",
+  "response":"",
+  "version":"0.1.0"
+}
 ```
 -----------------------
 
-2. Get INFLUXDB API url
+#### 2.  
 
 ```
 GET "/api/influxdb-url"
 ```
 
-Response:
+Get INFLUXDB API url
+
+**Example:**
+
+```
+http://localhost:8082/api/influxdb-url
+```
+
+**Response:**
 
 ```json
-{"status":"EXECUTED","message":"","response":"http://192.168.252.41:8086"}
+{
+  "status":"EXECUTED",
+  "message":"",
+  "response":"http://192.168.252.41:8086"
+}
 ```
 
 -----------------------
 
-3. Set INFLUXDB API url
+#### 3.
 
 ```
 POST "/api/influxdb-url"
 ```
 
+Set INFLUXDB API url
 
 -----------------------
 
-4. Get INFLUXDB DATABASE (reference to Collectd connection configured previously in InfluxDB)
+#### 4.
 
 ```
 GET "/api/db"
 ```
 
+Get INFLUXDB DATABASE (reference to Collectd connection configured previously in InfluxDB)
+
+**Example:**
+
+```
+http://localhost:8082/api/db
+```
+
 -----------------------
 
-5. Set INFLUXDB DATABASE
+#### 5.
 
 ```
 POST "/api/db"
 ```
 
+Set INFLUXDB DATABASE
+
 -----------------------
 
-6. Ping to service
+#### 6.
 
 ```
 GET "/api/ping"
 ```
 
+Ping to service
+
+**Example:**
+
+```
+http://localhost:8082/api/ping
+```
+
 -----------------------
 
-7. Get monitored hosts
+#### 7.
 
 ```
-GET "/monitored/hosts"
+GET "/api/monitored/hosts"
 ```
 
-Response:
+Get monitored hosts
+
+**Example:**
+
+```
+http://localhost:8082/api/monitored/hosts
+```
+
+**Response:**
 
 ```json
-{"monitored-hosts": ["ns50.bullx", "ns51.bullx", "ns54.bullx", "ns55.bullx", "ns56.bullx"]}
+{
+  "monitored-hosts": ["ns50.bullx", "ns51.bullx", "ns54.bullx", "ns55.bullx", "ns56.bullx"]
+}
 ```
 
 -----------------------
 
-8. Get monitored series (collectd names assigned to the different metrics)
+#### 8.
 
 ```
-GET "/monitored/series"
+GET "/api/monitored/series"
 ```
 
-Response:
+Get monitored series (collectd names assigned to the different metrics)
+
+**Example:**
+
+```
+http://localhost:8082/api/monitored/series
+```
+
+**Response:**
 
 ```json
 ["cpu_value","monitoring_value","nvidia_value","power_value","xeonphi_value"]
@@ -126,13 +203,21 @@ Response:
 
 -----------------------
 
-9. Get a list of the hosts and the series / metrics monitored in each of these hosts
+#### 9.
 
 ```
-GET "/monitored/hosts-series"
+GET "/api/monitored/hosts-series"
 ```
 
-Response:
+Get a list of the hosts and the series / metrics monitored in each of these hosts
+
+**Example:**
+
+```
+http://localhost:8082/api/monitored/hosts-series
+```
+
+**Response:**
 
 ```json
 {
@@ -145,23 +230,27 @@ Response:
 
 -----------------------
 
-10. Get the power stats of a host
+#### 10.
 
-**Note:** Time parameters should be expressed in Universal Time (UTC).
+```
+GET "/api/power-stats/:host/:t1/:t2"
+```
+
+Get the power stats of a host
+
+**Parameters:** Time parameters should be expressed in Universal Time (UTC).
 
 **Note:** If a metric was not found, it the service returns "NOT FOUND" for this concrete metric.
 
-**Note:** Temperature is expressed in degrees **celsius**, Memory in **MB**, Power in **Watts**, Usage in **%**.
+**Response:** Temperature is expressed in degrees **celsius**, Memory in **MB**, Power in **Watts**, Usage in **%**.
 
-```
-GET "/power-stats/:host/:t1/:t2"
-```
+**Example:**
 
 ```
 http://localhost:8082/api/power-stats/ns50.bullx/2016-08-02T00:00:00Z/2017-08-28T00:00:00Z
 ```
 
-Response: Node with NVIDIA GPUs
+**Response:** Node with NVIDIA GPUs
 
 ```json
 {
@@ -203,7 +292,7 @@ Response: Node with NVIDIA GPUs
 }
 ```
 
-Response: Node with XEON PHI processors
+**Response:** Node with XEON PHI processors
 
 ```json
 {
@@ -247,19 +336,25 @@ Response: Node with XEON PHI processors
 
 -----------------------
 
-11. Get stats info of a host
-
-This method returns the (last) values of the different metrics gathered by Collectd (in a host).
-
-**Note:** If a metric was not found, it the service returns "NOT FOUND" for this concrete metric.
-
-**Note:** Temperature is expressed in degrees **celsius**, Memory in **MB**, Power in **Watts**, Usage in **%**.
+#### 11.
 
 ```
-GET "/info-stats/:host"
+GET "/api/info-stats/:host"
 ```
 
-Response: Node with NVIDIA GPUs
+Get stats info of a host. This method returns the (last) values of the different metrics gathered by Collectd (in a host).
+
+**Response:** If a metric was not found, it the service returns "NOT FOUND" for this concrete metric.
+
+**Response:** Temperature is expressed in degrees **celsius**, Memory in **MB**, Power in **Watts**, Usage in **%**.
+
+**Example:**
+
+```
+http://localhost:8082/api/info-stats/ns50.bullx
+```
+
+**Response:** Node with NVIDIA GPUs
 
 ```json
 {
@@ -306,7 +401,7 @@ Response: Node with NVIDIA GPUs
 }
 ```
 
-Response: Node with XEON PHI processors
+**Response:** Node with XEON PHI processors
 
 ```json
 {
@@ -351,18 +446,25 @@ Response: Node with XEON PHI processors
 
 -----------------------
 
-12. Get stats info of all hosts
-
-This method returns the (last) values of the different metrics gathered by Collectd (in **all** host).
-
-**Note:** If a metric was not found, it the service returns "NOT FOUND" for this concrete metric.
-
-**Note:** Temperature is expressed in degrees **celsius**, Memory in **MB**, Power in **Watts**, Usage in **%**.
-
+#### 12.
 
 ```
-GET "/info-stats"
+GET "/api/info-stats"
 ```
+
+Get stats info of all hosts. This method returns the (last) values of the different metrics gathered by Collectd (in **all** host).
+
+**Response:** If a metric was not found, it the service returns "NOT FOUND" for this concrete metric.
+
+**Response:** Temperature is expressed in degrees **celsius**, Memory in **MB**, Power in **Watts**, Usage in **%**.
+
+**Example:**
+
+```
+http://localhost:8082/api/info-stats
+```
+
+**Response:**
 
 ```json
 {
@@ -417,7 +519,13 @@ GET "/info-stats"
 
 -----------------------
 
-13. Get stats info (with avergares) of a host
+#### 13.  
+
+```
+GET "/api/info-stats-with-avg/:host/:t"
+```
+
+Get stats info (with avergares) of a host
 
 **Note:** If a metric was not found, it the service returns "NOT FOUND" for this concrete metric.
 
@@ -432,16 +540,13 @@ GET "/info-stats"
 
 > GET "/info-stats-with-avg/:host/2d"
 
-
-```
-GET "/info-stats-with-avg/:host/:t"
-```
+**Example:**
 
 ```
 http://localhost:8082/api/info-stats-with-avg/ns50.bullx/30s
 ```
 
-Response: Node with NVIDIA GPUs
+**Response:** Node with NVIDIA GPUs
 
 ```json
 {
@@ -492,7 +597,7 @@ Response: Node with NVIDIA GPUs
 }
 ```
 
-Response: Node with XEON PHI processors
+**Response:** Node with XEON PHI processors
 
 ```json
 {
@@ -530,15 +635,22 @@ Response: Node with XEON PHI processors
 
 -----------------------
 
-14. Get stats info (with avergares) of all hosts
-
-**Note:** If a metric was not found, it the service returns "NOT FOUND" for this concrete metric.
-
-**Note:** Temperature is expressed in degrees **celsius**, Memory in **MB**, Power in **Watts**, Usage in **%**.
-
+#### 14.
 
 ```
-GET "/info-stats-with-avg"
+GET "/api/info-stats-with-avg"
+```
+
+Get stats info (with avergares) of all hosts
+
+**Response:** If a metric was not found, it the service returns "NOT FOUND" for this concrete metric.
+
+**Response:** Temperature is expressed in degrees **celsius**, Memory in **MB**, Power in **Watts**, Usage in **%**.
+
+**Example:**
+
+```
+http://localhost:8082/api/info-stats-with-avg
 ```
 
 -----------------------
