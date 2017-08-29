@@ -38,20 +38,20 @@ lein uberwar
 
 ### API methods:
 
-- [GET "/api"](#1.)
-- [GET "/api/influxdb-url"](#2.)
-- [POST "/api/influxdb-url"](#3.)
-- [GET "/api/db"](#4.)
-- [POST "/api/db"](#5.)
-- [GET "/api/ping"](#6.)
-- [GET "/api/monitored/hosts"](#7.)
-- [GET "/api/monitored/series"](#8.)
-- [GET "/api/monitored/hosts-series"](#9.)
-- [GET "/api/power-stats/:host/:t1/:t2"](#10.)
-- [GET "/api/info-stats/:host"](#11.)
-- [GET "/api/info-stats"](#12.)
-- [GET "/api/info-stats-with-avg/:host/:t"](#13.)
-- [GET "/api/info-stats-with-avg"](#14.)
+- [GET "/api"](#1)
+- [GET "/api/influxdb-url"](#2)
+- [POST "/api/influxdb-url"](#3)
+- [GET "/api/db"](#4)
+- [POST "/api/db"](#5)
+- [GET "/api/ping"](#6)
+- [GET "/api/monitored/hosts"](#7)
+- [GET "/api/monitored/series"](#8)
+- [GET "/api/monitored/hosts-series"](#9)
+- [GET "/api/power-stats/:host/:t1/:t2"](#10)
+- [GET "/api/info-stats/:host"](#11)
+- [GET "/api/info-stats"](#12)
+- [GET "/api/info-stats-with-avg/:host/:t"](#13)
+- [GET "/api/info-stats-with-avg"](#14)
 
 #### 1.
 
