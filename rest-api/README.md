@@ -59,7 +59,7 @@ lein uberwar
 GET "/api"
 ```
 
-Get REST API status
+Returns the REST API status
 
 **Example:**
 
@@ -85,7 +85,7 @@ http://localhost:8082/api
 GET "/api/influxdb-url"
 ```
 
-Get INFLUXDB API url
+Returns the INFLUXDB API url
 
 **Example:**
 
@@ -111,7 +111,7 @@ http://localhost:8082/api/influxdb-url
 POST "/api/influxdb-url"
 ```
 
-Set INFLUXDB API url
+Sets the INFLUXDB API url
 
 -----------------------
 
@@ -121,7 +121,7 @@ Set INFLUXDB API url
 GET "/api/db"
 ```
 
-Get INFLUXDB DATABASE (reference to Collectd connection configured previously in InfluxDB)
+Returns the INFLUXDB database url (the reference to the Collectd connection configured previously in InfluxDB)
 
 **Example:**
 
@@ -137,7 +137,7 @@ http://localhost:8082/api/db
 POST "/api/db"
 ```
 
-Set INFLUXDB DATABASE
+Sets the INFLUXDB database url (the reference to the Collectd connection configured previously in InfluxDB)
 
 -----------------------
 
@@ -147,7 +147,7 @@ Set INFLUXDB DATABASE
 GET "/api/ping"
 ```
 
-Ping to service
+Ping to the REST API service
 
 **Example:**
 
@@ -163,7 +163,7 @@ http://localhost:8082/api/ping
 GET "/api/monitored/hosts"
 ```
 
-Get monitored hosts
+Returns all the monitored hosts
 
 **Example:**
 
@@ -187,7 +187,7 @@ http://localhost:8082/api/monitored/hosts
 GET "/api/monitored/series"
 ```
 
-Get monitored series (collectd names assigned to the different metrics)
+Returns all the monitored series (collectd names assigned to the different metrics)
 
 **Example:**
 
@@ -209,7 +209,7 @@ http://localhost:8082/api/monitored/series
 GET "/api/monitored/hosts-series"
 ```
 
-Get a list of the hosts and the series / metrics monitored in each of these hosts
+Returns a list of the hosts and the series or metrics monitored in each of these hosts
 
 **Example:**
 
@@ -236,7 +236,7 @@ http://localhost:8082/api/monitored/hosts-series
 GET "/api/power-stats/:host/:t1/:t2"
 ```
 
-Get the power stats of a host
+Returns the power stats (and other metrics like temperatura, usage...) of a host
 
 **Parameters:** Time parameters should be expressed in Universal Time (UTC).
 
@@ -342,9 +342,9 @@ http://localhost:8082/api/power-stats/ns50.bullx/2016-08-02T00:00:00Z/2017-08-28
 GET "/api/info-stats/:host"
 ```
 
-Get stats info of a host. This method returns the (last) values of the different metrics gathered by Collectd (in a host).
+Returns the stats of a host. This method returns the (last) values of the different metrics gathered by Collectd (in a host).
 
-**Response:** If a metric was not found, it the service returns "NOT FOUND" for this concrete metric.
+**Response:** If a metric was not found, then the service returns "NOT FOUND" for this concrete metric.
 
 **Response:** Temperature is expressed in degrees **celsius**, Memory in **MB**, Power in **Watts**, Usage in **%**.
 
@@ -452,9 +452,9 @@ http://localhost:8082/api/info-stats/ns50.bullx
 GET "/api/info-stats"
 ```
 
-Get stats info of all hosts. This method returns the (last) values of the different metrics gathered by Collectd (in **all** host).
+Returns the stats of all hosts. This method returns the (last) values of the different metrics gathered by Collectd (in **all** host).
 
-**Response:** If a metric was not found, it the service returns "NOT FOUND" for this concrete metric.
+**Response:** If a metric was not found, then the service returns "NOT FOUND" for this concrete metric.
 
 **Response:** Temperature is expressed in degrees **celsius**, Memory in **MB**, Power in **Watts**, Usage in **%**.
 
@@ -525,9 +525,9 @@ http://localhost:8082/api/info-stats
 GET "/api/info-stats-with-avg/:host/:t"
 ```
 
-Get stats info (with avergares) of a host
+Returns the stats (including avergares) of a host
 
-**Note:** If a metric was not found, it the service returns "NOT FOUND" for this concrete metric.
+**Note:** If a metric was not found, then the service returns "NOT FOUND" for this concrete metric.
 
 **Note:** Temperature is expressed in degrees **celsius**, Memory in **MB**, Power in **Watts**, Usage in **%**.
 
@@ -641,9 +641,9 @@ http://localhost:8082/api/info-stats-with-avg/ns50.bullx/30s
 GET "/api/info-stats-with-avg"
 ```
 
-Get stats info (with avergares) of all hosts
+Returns the stats (including averages avergares) of all hosts
 
-**Response:** If a metric was not found, it the service returns "NOT FOUND" for this concrete metric.
+**Response:** If a metric was not found, then the service returns "NOT FOUND" for this concrete metric.
 
 **Response:** Temperature is expressed in degrees **celsius**, Memory in **MB**, Power in **Watts**, Usage in **%**.
 
