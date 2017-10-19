@@ -59,6 +59,10 @@ util  			value:GAUGE:0:U
 gcc -DHAVE_CONFIG_H -Wall -Werror -g -O2 -shared -fPIC -I/COLLECTD_SOURCES_/ -I/COLLECTD_SOURCE/daemon/ -lnvidia-ml -LNVIDIA_LIBS/ -ldl -o nvidia_plugin.so nvidia_plugin.c
 ```
 
+```bash
+gcc -DHAVE_CONFIG_H -Wall -Werror -g -O2 -shared -fPIC -I/COLLECTD_SOURCES_/ -I/COLLECTD_SOURCE/daemon/ -Wl,--no-as-needed -lnvidia-ml -LNVIDIA_LIBS/ -ldl -o nvidia_plugin.so nvidia_plugin.c
+```
+
   4. Modify permissions and owner
 
 ```bash
@@ -89,10 +93,12 @@ LoadPlugin csv
 ...
 ```
 
-  7. Start collectd
+  7. Start / stop collectd
 
 ```bash
-sudo /home/atos/collectd/collectd
+sudo /etc/init.d/collectd stop
+
+sudo /etc/init.d/collectd start
 ```
 
 -----------------------
@@ -124,9 +130,9 @@ See [Monitoring with Collectd, InfluxDB & Grafana](http://www.vishalbiyani.com/g
 
 1. Configure the following files:
 
-  1. collectd.conf
+    1. collectd.conf
 
-  2. influxdb.conf
+    2. influxdb.conf
 
 2. Configure grafana (from admin GUI)
 
