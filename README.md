@@ -126,7 +126,9 @@ View [rest-api - Readme file](rest-api/README.md) to see how to install and conf
 
 ### Usage Guide
 
-...
+- [GRAFANA](https://grafana.com/)
+
+- [REST API](rest-api/README.md)
 
 -----------------------
 
