@@ -24,7 +24,7 @@ The Monitoring Infrastructure is a component of the European Project TANGO (http
 
 The responsibility of this component is twofold. On one side it must provide running applications with metrics of the status of different devices, such as CPU, GPUs, FPGAs, etc. This information should be both energy consumption and performance status. On the other side it should also provide historical statistics for device metrics for latter analysis of upper components of the TANGO architecture.
 
-![TANGO architecture](resources/tango-monitor_infr.png)
+![TANGO architecture](docs_resources/tango-monitor_infr.png)
 
 This component relies on [Collectd](https://collectd.org/), which will be used together with some [custom plugins](Collectd) done specifically for TANGO, in order to get and store energy consumption and performance values from the applications running in the different environments.
 
@@ -73,7 +73,7 @@ View [REST API specification](https://github.com/TANGO-Project/monitor-infrastru
 
 #### Architecture
 
-![Component architecture](resources/components-monitor_infr.png)
+![Component architecture](docs_resources/components-monitor_infr.png)
 
 -----------------------
 
