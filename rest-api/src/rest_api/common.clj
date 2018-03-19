@@ -103,3 +103,6 @@
       "NOT FOUND"
       (round-number (second v) :precision 3))
     (catch Exception e (do (logs/log-exception e) 0))))
+
+
+;(GET "http://www.google.es:80")

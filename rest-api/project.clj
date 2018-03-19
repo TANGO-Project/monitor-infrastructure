@@ -31,7 +31,7 @@
   :uberwar {:handler rest-api.handler/app}
   :ring {:handler rest-api.handler/app
          :port 8082
-         :open-browser? true
+         :open-browser? false
          :resources-war-path "WEB-INF/classes/"}
   :profiles
     {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]

@@ -32,13 +32,14 @@
       (GET  "/monitored/hosts"            {headers :headers}                                  (api-funcs/get-MONITORED-HOSTS))
       (GET  "/monitored/series"           {headers :headers}                                  (api-funcs/get-MONITORED-SERIES))
       (GET  "/monitored/hosts-series"     {headers :headers}                                  (api-funcs/get-MONITORED-HOSTS-SERIES))
-      ;; INFO: used by
-      (GET  "/info-stats/:h"              {{h :h} :params, headers :headers}                  (api-funcs/get-info-stats-host h))
-      (GET  "/info-stats"                 {headers :headers}                                  (api-funcs/get-info-stats))
-      (GET  "/info-stats-with-avg"        {{t :t} :params, headers :headers}                  (api-funcs/get-info-stats-with-avg "30s"))
-      (GET  "/info-stats-with-avg/:h/:t"  {{h :h t :t} :params, headers :headers}             (api-funcs/get-info-stats-with-avg-host h t))
-      ;; POWER-STATS: used by Programming Model Component
-      (GET  "/power-stats/:h/:t1/:t2"     {{h :h t1 :t1 t2 :t2} :params, headers :headers}    (api-funcs/get-power-stats-v2 h t1 t2))))
+      ;; METRICS INFO:
+      (GET  "/metrics/:h"                 {{h :h} :params, headers :headers}                  (api-funcs/get-info-stats-host h))
+      (GET  "/metrics"                    {headers :headers}                                  (api-funcs/get-info-stats))
+      (GET  "/metrics-with-avg"           {headers :headers}                                  (api-funcs/get-info-stats-with-avg "30s"))
+      (GET  "/metrics-with-avg/:t"        {{t :t} :params, headers :headers}                  (api-funcs/get-info-stats-with-avg t))
+      (GET  "/metrics-with-avg/:h/:t"     {{h :h t :t} :params, headers :headers}             (api-funcs/get-info-stats-with-avg-host h t))
+      ;; STATS: used by Programming Model Component
+      (GET  "/stats/:h/:t1/:t2"           {{h :h t1 :t1 t2 :t2} :params, headers :headers}    (api-funcs/get-power-stats-v2 h t1 t2))))
   ; routes
   (route/resources "/")
   (route/not-found (response/response {:message "-Route not found-"})))

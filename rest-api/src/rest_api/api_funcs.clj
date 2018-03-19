@@ -240,7 +240,7 @@
                     (= k config/SERIE-NVIDIA-GPUs)  (into {}
                                                       (for [i (range 0 (/ v config/SERIE-NVIDIA-GPUs-total-metrics))]
                                                         { (keyword (str "gpu" i))
-                                                          (let [query (queries/get-val-node-v2 k host i t1 t2)
+                                                          (let [query (queries/get-metrics-node k host i t1 t2)
                                                                 power-values (queries-resp-parser/values-get-val-node-v2 query "power")
                                                                 usage-values (queries-resp-parser/values-get-val-node-v2 query "percent")
                                                                 apps-values (queries-resp-parser/values-get-val-node-v2 query "objects")
@@ -271,7 +271,7 @@
                       (= k config/SERIE-XEON-PHI)  (into {}
                                                         (for [i (range 0 (/ v config/SERIE-XEON-PHI-total-metrics))]
                                                           { (keyword (str "xeon" i))
-                                                            (let [query (queries/get-val-node-v2 k host i t1 t2)
+                                                            (let [query (queries/get-metrics-node k host i t1 t2)
                                                                   power-values (queries-resp-parser/values-get-val-node-v2 query "power")
                                                                   usage-values (queries-resp-parser/values-get-val-node-v2 query "percent")
                                                                   apps-values (queries-resp-parser/values-get-val-node-v2 query "objects")
