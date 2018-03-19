@@ -38,18 +38,23 @@ cd collectd
   2. Add new types: If new types are needed then include them in '/opt/collectd/share/collectd/types.db':
 
 ```
-absolute		value:ABSOLUTE:0:U
-apache_bytes		value:DERIVE:0:U
+absolute            value:ABSOLUTE:0:U
+apache_bytes		    value:DERIVE:0:U
 apache_connections	value:GAUGE:0:65535
 ...
-vs_threads		value:GAUGE:0:65535
+vs_threads		      value:GAUGE:0:65535
 
 #
 # new types:
 #
-pwer    		value:GAUGE:0:NAN
-util  			value:GAUGE:0:U
+frequency_gr 			  value:GAUGE:0:U
+frequency_mem  		  value:GAUGE:0:U
+frequency_sm  		  value:GAUGE:0:U
+pwer    		        value:GAUGE:0:NAN
+util  			        value:GAUGE:0:U
 ```
+
+
 
   3. Compile the program (plugin) using *src* from 'collectd' (git - download).
 
