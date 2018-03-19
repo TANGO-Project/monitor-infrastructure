@@ -24,6 +24,14 @@ This plugin gets the values from the following metrics:
 - processes running
 
 
+### types.db
+
+New entries that need to be added to `types.db`:
+- **frequency_gr** 			_value:GAUGE:0:U_
+- **frequency_mem**  		_value:GAUGE:0:U_
+- **frequency_sm**  		_value:GAUGE:0:U_
+
+
 ## License
 
   &copy; Atos 2016
