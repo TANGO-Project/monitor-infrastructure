@@ -22,6 +22,7 @@ This plugin gets the values from the following metrics:
 - memory used
 - usage
 - processes running
+- clock frequency (SM, Memory and Graphics clock domain)
 
 
 ### types.db

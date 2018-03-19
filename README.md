@@ -1,10 +1,10 @@
-# Monitor Infrastructure
+# Monitoring Infrastructure
 
 [![Build Status](https://travis-ci.org/TANGO-Project/monitoring-infrastructure.svg?branch=master)](https://travis-ci.org/TANGO-Project/monitoring-infrastructure)
 
 &copy; Atos Spain S.A. 2016
 
-The Monitor Infrastructure is a component of the European Project TANGO (http://tango-project.eu ).
+The Monitoring Infrastructure is a component of the European Project TANGO (http://tango-project.eu ).
 
 -----------------------
 
@@ -51,7 +51,7 @@ Available collection of probes to measure energy in heterogeneous hardware for t
 ### Component architecture
 
 #### Components
-The monitor Infrastructure is composed by the following components:
+The monitoring Infrastructure is composed by the following components:
 
 ###### Collectd & plugins
 
@@ -134,7 +134,7 @@ View [rest-api - Readme file](rest-api/README.md) to see how to install and conf
 
 ### Relation to other TANGO components
 
-The other TANGO components connect to the monitor Infrastructure through the REST API application:
+The other TANGO components connect to the monitoring Infrastructure through the REST API application:
 
 - Programming model
 
