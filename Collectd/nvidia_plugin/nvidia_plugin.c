@@ -290,6 +290,20 @@ static int my_read (void) {
 				/*
 				 * Clock types
 				 * nvmlClockType_t : NVML_CLOCK_SM (SM clock domain), NVML_CLOCK_GRAPHICS (Graphics clock domain), NVML_CLOCK_MEM
+
+					 enum nvmlClockType_t
+					 		Clock types.
+							 All speeds are in Mhz.
+							 Values
+								 NVML_CLOCK_GRAPHICS = 0
+								 		Graphics clock domain.
+								 NVML_CLOCK_SM = 1
+								 		SM clock domain.
+								 NVML_CLOCK_MEM = 2
+								 		Memory clock domain.
+								 NVML_CLOCK_VIDEO = 3
+								 		Video encoder/decoder clock domain.
+								 NVML_CLOCK_COUNT
 				 */
 				result = (nvmlReturn_t)nvmlDeviceGetClockInfo(device, NVML_CLOCK_SM, &clockMHz);
 				if (NVML_SUCCESS != result) {
@@ -300,10 +314,52 @@ static int my_read (void) {
 
 						/*
 						 * Use values from 'types.db' (/opt/collectd/share/collectd/types.db) or add a new one:
+						 *		- new entry
+						 *					frequency_sm  		value:GAUGE:0:U
 						 * 		- existing entry:
 						 *					frequency     value:GAUGE:0:U
 						 */
-						if (submitValue(clockMHz, "frequency", i) != 0) {
+						if (submitValue(clockMHz, "frequency_sm", i) != 0) {
+								WARNING("nvidia_plugin plugin: Dispatching a value failed.");
+						}
+				}
+
+				result = (nvmlReturn_t)nvmlDeviceGetClockInfo(device, NVML_CLOCK_MEM, &clockMHz);
+				if (NVML_SUCCESS != result) {
+						printf(">> ERROR [nvmlDeviceGetClockInfo]: %s\n", nvmlErrorString(result));
+				}
+				else {
+						printf(">> NVML_CLOCK_MEM: %d \n", clockMHz);
+
+						/*
+						 * Use values from 'types.db' (/opt/collectd/share/collectd/types.db) or add a new one:
+						 *		- new entry
+						 *					frequency_mem  		value:GAUGE:0:U
+						 * 		- existing entry:
+						 *					frequency     value:GAUGE:0:U
+						 */
+						if (submitValue(clockMHz, "frequency_mem", i) != 0) {
+								WARNING("nvidia_plugin plugin: Dispatching a value failed.");
+						}
+				}
+
+				result = (nvmlReturn_t)nvmlDeviceGetClockInfo(device, NVML_CLOCK_GRAPHICS, &clockMHz);
+				if (NVML_SUCCESS != result) {
+						printf(">> ERROR [nvmlDeviceGetClockInfo]: %s\n", nvmlErrorString(result));
+				}
+				else {
+						printf(">> NVML_CLOCK_GRAPHICS: %d \n", clockMHz);
+
+						/*
+						 * Use values from 'types.db' (/opt/collectd/share/collectd/types.db) or add a new one:
+						 *		- new entries
+						 *					frequency_gr 			value:GAUGE:0:U
+						 *					frequency_mem  		value:GAUGE:0:U
+						 *					frequency_sm  		value:GAUGE:0:U
+						 * 		- existing entry:
+						 *					frequency     value:GAUGE:0:U
+						 */
+						if (submitValue(clockMHz, "frequency_gr", i) != 0) {
 								WARNING("nvidia_plugin plugin: Dispatching a value failed.");
 						}
 				}
