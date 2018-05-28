@@ -47,7 +47,6 @@ Available collection of probes to measure energy in heterogeneous hardware for t
 -----------------------
 
 ### Component architecture
-
 #### Components
 The monitoring Infrastructure is composed by the following components:
 
