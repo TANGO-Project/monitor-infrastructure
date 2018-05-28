@@ -1,7 +1,5 @@
 # Monitoring Infrastructure
 
-[![Build Status](https://travis-ci.org/TANGO-Project/monitoring-infrastructure.svg?branch=master)](https://travis-ci.org/TANGO-Project/monitoring-infrastructure)
-
 &copy; Atos Spain S.A. 2016
 
 The Monitoring Infrastructure is a component of the European Project TANGO (http://tango-project.eu ).
