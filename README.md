@@ -76,7 +76,6 @@ View [REST API specification](https://github.com/TANGO-Project/monitor-infrastru
 -----------------------
 
 ### Installation Guide (ubuntu, 64-bit systems)
-
 ##### 1. Requirements
 
 - ubuntu 64-bit system
