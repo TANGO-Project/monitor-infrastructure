@@ -10,6 +10,8 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building..'
+                dir './rest-api'
+                execCommand 'lein test'
             }
         }
         stage('Test') {
