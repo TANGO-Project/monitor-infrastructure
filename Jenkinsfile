@@ -11,7 +11,7 @@ pipeline {
             steps {
                 echo 'Building..'
                 dir './rest-api'
-                execCommand 'lein test'
+                sh 'lein test'
             }
         }
         stage('Test') {
