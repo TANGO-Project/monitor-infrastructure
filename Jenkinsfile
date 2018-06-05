@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { docker { image 'lein-2.8.1' } }
 
     stages {
         stage('Checkout code') {
