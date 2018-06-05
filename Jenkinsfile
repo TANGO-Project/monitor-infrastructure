@@ -19,8 +19,11 @@ pipeline {
                 echo 'Testing..'
                 dir('./rest-api') {
                     sh 'java -version'
-                    sh 'ls'
-                    sh 'lein test'
+                    sh '''#!/bin/sh
+                          clear
+                          ls -al'''
+                    sh '''#!/bin/sh
+                          lein test'''
                 }
             }
         }
