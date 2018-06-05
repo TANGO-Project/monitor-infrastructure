@@ -16,9 +16,9 @@ pipeline {
             steps {
                 echo 'Testing..'
                 sh 'java -version'
-                sh 'lein -version'
+                sh '/usr/local/bin/lein -version'
                 sh 'cd rest-api'
-                sh 'lein test'
+                sh '/usr/local/bin/lein test'
             }
         }
         stage('Deploy') {
