@@ -17,13 +17,12 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Testing..'
-                dir('./rest-api') {
+                dir('/home/atos/.jenkins/workspace/monitoring-infrastructure/rest-api') {
                     sh 'java -version'
                     sh 'lein -version'
                     sh '''#!/bin/sh
                           ls -al'''
-                    sh '''#!/bin/sh
-                          lein test'''
+                    sh 'lein test'
                 }
             }
         }
