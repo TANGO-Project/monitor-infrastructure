@@ -18,9 +18,7 @@ pipeline {
             steps {
                 echo 'Testing..'
                 sh 'java -version'
-                sh 'cd rest-api'
-                sh 'ls'
-                sh 'cd rest-api'
+                sh 'cd ./rest-api'
                 sh 'ls'
                 sh '/usr/local/bin/lein'
                 sh '/usr/local/bin/lein -version'
