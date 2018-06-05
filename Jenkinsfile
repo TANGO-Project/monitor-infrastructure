@@ -10,8 +10,6 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building..'
-                sh './rest-api'
-                sh 'lein test'
             }
         }
         stage('Test') {
