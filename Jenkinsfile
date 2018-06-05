@@ -1,5 +1,5 @@
 pipeline {
-    agent { docker { image 'clojure:lein-alpine' } }
+    agent { docker { image 'circleci/clojure:lein-2.7.1' } }
 
     stages {
         stage('Checkout code') {
