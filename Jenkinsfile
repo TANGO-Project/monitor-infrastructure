@@ -5,6 +5,8 @@ pipeline {
         stage('Checkout code') {
             steps {
                 checkout scm
+                echo 'Checking folder..'
+                sh 'ls'
             }
         }
         stage('Build') {
@@ -16,6 +18,8 @@ pipeline {
             steps {
                 echo 'Testing..'
                 sh 'java -version'
+                sh 'cd rest-api'
+                sh 'ls'
                 sh 'cd rest-api'
                 sh 'ls'
                 sh '/usr/local/bin/lein'
