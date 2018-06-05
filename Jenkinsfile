@@ -17,14 +17,9 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Testing..'
-                
-                dir('/home/atos/.jenkins/workspace') {
-                    sh '''#!/bin/sh
-                          ls -al'''
-                }
-                
                 dir('./rest-api') {
                     sh 'java -version'
+                    sh 'sudo lein -version'
                     sh '''#!/bin/sh
                           ls -al'''
                     sh '''#!/bin/sh
