@@ -1,5 +1,5 @@
 pipeline {
-    agent { docker { image 'clojure:latest' } }
+    agent { docker { image 'clojure:lein-alpine' } }
 
     stages {
         stage('Checkout code') {
@@ -19,7 +19,7 @@ pipeline {
                 echo 'Testing..'
                 dir('./rest-api') {
                     sh 'java -version'
-                    sh 'sudo lein -version'
+                    sh 'lein -version'
                     sh '''#!/bin/sh
                           ls -al'''
                     sh '''#!/bin/sh
