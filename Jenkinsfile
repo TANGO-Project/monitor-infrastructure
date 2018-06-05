@@ -15,6 +15,7 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Testing..'
+                sh 'java -version'
                 sh 'lein -version'
                 sh 'cd rest-api'
                 sh 'lein test'
