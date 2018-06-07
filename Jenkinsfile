@@ -5,25 +5,25 @@ pipeline {
         stage('Checkout code') {
             steps {
                 checkout scm
-                echo 'Checking folder..'
+                echo 'Checking folder...'
                 sh 'ls'
             }
         }
         stage('Build') {
             steps {
-                echo 'Building..'
+                echo 'Building...'
             }
         }
         stage('Test') {
             steps {
-                echo 'Testing..'
+                echo 'Testing...'
                 sh 'lein -version'
                 sh "cd ./rest-api && lein test"
             }
         }
         stage('Deploy') {
             steps {
-                echo 'Deploying....'
+                echo 'Deploying...'
             }
         }
     }
