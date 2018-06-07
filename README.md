@@ -139,4 +139,3 @@ The other TANGO components connect to the monitoring Infrastructure through the 
 - Energy modeller
 
 - Self-Adaptation Manager
-
