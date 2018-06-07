@@ -4,7 +4,6 @@
 
 The Monitoring Infrastructure is a component of the European Project TANGO (http://tango-project.eu ).
 
-
 -----------------------
 
 [Description](#description)
@@ -16,7 +15,6 @@ The Monitoring Infrastructure is a component of the European Project TANGO (http
 [Usage Guide](#usage-guide)
 
 [Relation to other TANGO components](#relation-to-other-tango-components)
-
 
 -----------------------
 
