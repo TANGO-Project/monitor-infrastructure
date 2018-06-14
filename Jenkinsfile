@@ -1,6 +1,5 @@
 pipeline {
-    agent { docker { image 'circleci/clojure:lein-2.7.1' } }
-
+    agent { docker { image '(jdk-8-alpine/Dockerfile)' } }
     stages {
         stage ('Initialize') {
             steps {
@@ -10,30 +9,15 @@ pipeline {
                 '''
             }
         }
-        stage('Checkout code') {
-            steps {
-                checkout scm
-                echo 'Checking folder...'
-                sh 'ls'
-            }
-        }
-        stage('Build') {
-            steps {
-                echo 'Building...'
                 
-            }
-        }
-        stage('Test') {
+        stage ('Build') {
             steps {
-                echo 'Testing...'
-                sh 'lein -version'
-                sh "cd ./rest-api && lein test"
+                sh 'mvn -Dmaven.test.failure.ignore=true install' 
             }
+            post {
+                success {
+                    junit 'target/surefire-reports/**/*.xml' 
         }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying...'
-                
             }
         }
     }
