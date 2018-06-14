@@ -1,5 +1,5 @@
 pipeline {
-    agent { docker { image 'jdk-8-alpine/Dockerfile' } }
+    agent { docker { image 'jdk-8-alpine' } }
     stages {
         stage ('Initialize') {
             steps {
