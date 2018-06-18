@@ -1,5 +1,5 @@
 pipeline {
-    agent { docker { image 'maven:3.5.3-jdk-8-alpine' } }
+    agent { docker { image 'eclipse:ubuntu_jdk8' } }
     stages {
         stage ('Initialize') {
             steps {
