@@ -1,5 +1,5 @@
 pipeline {
-    agent { docker { image 'eclipse:ubuntu_jdk8' } }
+    agent { docker { image 'eclipse/ubuntu_jdk8' } }
     stages {
         stage ('Initialize') {
             steps {
