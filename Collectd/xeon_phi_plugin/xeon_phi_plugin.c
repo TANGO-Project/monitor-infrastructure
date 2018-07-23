@@ -178,17 +178,19 @@ static int my_read (void) {
 						ERROR("[my_read] Error (5)...");
 						ERROR("Error: Failed to get power utilization information: %s\n", mic_get_device_name(mdh));
 		    }
-		    else if (mic_get_inst_power_readings(pinfo, &pwr) != E_MIC_SUCCESS) {
-						ERROR("[my_read] Error (6)...");
-						ERROR("Error: Failed to get instant power readings: %s\n", mic_get_device_name(mdh));
-		    }
-				else if (submitValue((pwr / 1000000), "power", card_num) != 0) {
-						WARNING("xeonphi_plugin plugin: Dispatching a value [power] failed.");
-				}
+		    else {
+						if (mic_get_inst_power_readings(pinfo, &pwr) != E_MIC_SUCCESS) {
+								ERROR("[my_read] Error (6)...");
+								ERROR("Error: Failed to get instant power readings: %s\n", mic_get_device_name(mdh));
+				    }
+						else if (submitValue((pwr / 1000000), "power", card_num) != 0) {
+								WARNING("xeonphi_plugin plugin: Dispatching a value [power] failed.");
+						}
 
-				if (pinfo != NULL) {
-						INFO("[my_read] Calling 'mic_free_power_utilization_info' ...");
-		    		(void)mic_free_power_utilization_info(pinfo);
+						if (pinfo != NULL) {
+								INFO("[my_read] Calling 'mic_free_power_utilization_info' ...");
+				    		(void)mic_free_power_utilization_info(pinfo);
+						}
 				}
 
 				 /***************************************************************************************
@@ -203,21 +205,23 @@ static int my_read (void) {
 						ERROR("[my_read] Error (7)...");
 						ERROR("Error: Failed to get memory utilization information: %s\n", mic_get_device_name(mdh));
 		    }
-		    else if (mic_get_total_memory_size(memory, &total_size) != E_MIC_SUCCESS) {
-						ERROR("[my_read] Error (8)...");
-						ERROR("Error: Failed to get total_memory_size: %s\n", mic_get_device_name(mdh));
-		    }
-		    else if (mic_get_available_memory_size(memory, &avail_size) != E_MIC_SUCCESS) {
-						ERROR("[my_read] Error (9)...");
-						ERROR("Error: Failed to get available_memory_size: %s\n", mic_get_device_name(mdh));
-		    }
-				else if (submitValue(((total_size-avail_size) / 1024), "memory", card_num) != 0) {
-						WARNING("xeonphi_plugin plugin: Dispatching a value [memory] failed.");
-				}
+		    else {
+						if (mic_get_total_memory_size(memory, &total_size) != E_MIC_SUCCESS) {
+								ERROR("[my_read] Error (8)...");
+								ERROR("Error: Failed to get total_memory_size: %s\n", mic_get_device_name(mdh));
+				    }
+				    else if (mic_get_available_memory_size(memory, &avail_size) != E_MIC_SUCCESS) {
+								ERROR("[my_read] Error (9)...");
+								ERROR("Error: Failed to get available_memory_size: %s\n", mic_get_device_name(mdh));
+				    }
+						else if (submitValue(((total_size-avail_size) / 1024), "memory", card_num) != 0) {
+								WARNING("xeonphi_plugin plugin: Dispatching a value [memory] failed.");
+						}
 
-				if (memory != NULL) {
-						INFO("[my_read] Calling 'mic_free_memory_utilization_info' ...");
-			    	(void)mic_free_memory_utilization_info(memory);
+						if (memory != NULL) {
+								INFO("[my_read] Calling 'mic_free_memory_utilization_info' ...");
+					    	(void)mic_free_memory_utilization_info(memory);
+						}
 				}
 
 				/***************************************************************************************
@@ -231,17 +235,19 @@ static int my_read (void) {
 						ERROR("[my_read] Error (10)...");
 						ERROR("Error: Failed to get thermal information: %s\n", mic_get_device_name(mdh));
 		    }
-		    else if (mic_get_die_temp(thermal, &temp) != E_MIC_SUCCESS) {
-						ERROR("[my_read] Error (11)...");
-						ERROR("Error: Failed to get instant thermal readings: %s\n", mic_get_device_name(mdh));
-		    }
-				else if (submitValue(temp, "temperature", card_num) != 0) {
-						WARNING("xeonphi_plugin plugin: Dispatching a value [temperature] failed.");
-				}
+		    else {
+						if (mic_get_die_temp(thermal, &temp) != E_MIC_SUCCESS) {
+								ERROR("[my_read] Error (11)...");
+								ERROR("Error: Failed to get instant thermal readings: %s\n", mic_get_device_name(mdh));
+				    }
+						else if (submitValue(temp, "temperature", card_num) != 0) {
+								WARNING("xeonphi_plugin plugin: Dispatching a value [temperature] failed.");
+						}
 
-				if (thermal != NULL) {
-						INFO("[my_read] Calling 'mic_free_thermal_info' ...");
-			    	(void)mic_free_thermal_info(thermal);
+						if (thermal != NULL) {
+								INFO("[my_read] Calling 'mic_free_thermal_info' ...");
+					    	(void)mic_free_thermal_info(thermal);
+						}
 				}
 		}
 
