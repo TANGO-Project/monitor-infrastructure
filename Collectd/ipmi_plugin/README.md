@@ -6,7 +6,7 @@ This plugin relies in the [freeIPMI Library](https://www.gnu.org/software/freeip
 
 ### Configure and compile
 
-Before compiling the plugin, modify the following content to add or remove the metrics you want to collect:
+Before compiling the plugin, modify the following content (in _ipmi_plugin_v2.c_) to add or remove the metrics you want to collect:
 
 ```c++
 /* Initialize w/ record id numbers to only monitor specific record ids */
