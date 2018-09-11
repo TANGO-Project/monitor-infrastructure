@@ -26,7 +26,7 @@ unsigned int record_ids_length = 7;
 Then, execute the following to compile the plugin:
 
 ```bash
-gcc -o ipmi_plugin ipmi_plugin_v2.c -lipmimonitoring
+gcc -DHAVE_CONFIG_H -Wall -Werror -g -O2 -shared -fPIC -I/COLLECTD_SOURCES_/ -I/COLLECTD_SOURCE/daemon/ - lipmimonitoring -o ipmi_plugin.so ipmi_plugin_v2.c
 ```
 
 ### Metrics collected
