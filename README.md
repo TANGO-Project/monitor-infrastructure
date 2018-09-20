@@ -42,7 +42,7 @@ Available collection of probes to measure energy in heterogeneous hardware for t
     - usage
 
 
-3. [IPMI plugin from collectd](Collectd/ipmi_plugin) (ready, but not tested)
+3. [IPMI plugin from collectd](Collectd/ipmi_plugin) :white_check_mark:
     - power
 
 -----------------------

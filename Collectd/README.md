@@ -61,11 +61,11 @@ util  			        value:GAUGE:0:U
      For example, compile the *nvidia_plugin* (collectd sources located in /_COLLECTD__SOURCES_, and nvidia library located in /_NVIDIA__LIBS_):
 
 ```bash
-gcc -DHAVE_CONFIG_H -Wall -Werror -g -O2 -shared -fPIC -I/COLLECTD_SOURCES_/ -I/COLLECTD_SOURCE/daemon/ -lnvidia-ml -LNVIDIA_LIBS/ -ldl -o nvidia_plugin.so nvidia_plugin.c
+gcc -DHAVE_CONFIG_H -Wall -Werror -g -O2 -shared -fPIC -I/COLLECTD_SOURCES_/ -I/COLLECTD_SOURCES/daemon/ -lnvidia-ml -LNVIDIA_LIBS/ -ldl -o nvidia_plugin.so nvidia_plugin.c
 ```
 
 ```bash
-gcc -DHAVE_CONFIG_H -Wall -Werror -g -O2 -shared -fPIC -I/COLLECTD_SOURCES_/ -I/COLLECTD_SOURCE/daemon/ -Wl,--no-as-needed -lnvidia-ml -LNVIDIA_LIBS/ -ldl -o nvidia_plugin.so nvidia_plugin.c
+gcc -DHAVE_CONFIG_H -Wall -Werror -g -O2 -shared -fPIC -I/COLLECTD_SOURCES_/ -I/COLLECTD_SOURCES/daemon/ -Wl,--no-as-needed -lnvidia-ml -LNVIDIA_LIBS/ -ldl -o nvidia_plugin.so nvidia_plugin.c
 ```
 
   4. Modify permissions and owner

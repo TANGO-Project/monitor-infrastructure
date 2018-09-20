@@ -501,7 +501,7 @@ static int my_read (void) {
 
 
 	if (!record_ids_length && !sensor_types_length) {
-		if ((sensor_count = ipmi_monitoring_sensor_readings_by_record_id(ctx, hostname, ipmi_config, sensor_reading_flags, NULL, 0, NULL, NULL)) < 0) {
+		if ((sensor_count = ipmi_monitoring_sensor_readings_by_record_id(ctx, hostname, &ipmi_config, sensor_reading_flags, NULL, 0, NULL, NULL)) < 0) {
 			fprintf (stderr, "ipmi_monitoring_sensor_readings_by_record_id: %s\n", ipmi_monitoring_ctx_errormsg(ctx));
 			return -1;
 		}
@@ -510,7 +510,7 @@ static int my_read (void) {
 		}
 	}
 	else if (record_ids_length) {
-		if ((sensor_count = ipmi_monitoring_sensor_readings_by_record_id(ctx, hostname, ipmi_config, sensor_reading_flags, record_ids, record_ids_length, NULL, NULL)) < 0) {
+		if ((sensor_count = ipmi_monitoring_sensor_readings_by_record_id(ctx, hostname, &ipmi_config, sensor_reading_flags, record_ids, record_ids_length, NULL, NULL)) < 0) {
 			fprintf(stderr, "ipmi_monitoring_sensor_readings_by_record_id: %s\n", ipmi_monitoring_ctx_errormsg(ctx));
 			return -1;
 		}
@@ -519,7 +519,7 @@ static int my_read (void) {
 		}
 	}
 	else {
-		if ((sensor_count = ipmi_monitoring_sensor_readings_by_sensor_type(ctx, hostname, ipmi_config, sensor_reading_flags, sensor_types, sensor_types_length, NULL, NULL)) < 0) {
+		if ((sensor_count = ipmi_monitoring_sensor_readings_by_sensor_type(ctx, hostname, &ipmi_config, sensor_reading_flags, sensor_types, sensor_types_length, NULL, NULL)) < 0) {
 			fprintf(stderr, "ipmi_monitoring_sensor_readings_by_sensor_type: %s\n", ipmi_monitoring_ctx_errormsg(ctx));
 			return -1;
 		}
