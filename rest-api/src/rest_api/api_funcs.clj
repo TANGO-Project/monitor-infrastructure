@@ -446,7 +446,7 @@
 ;; FUNCTION: get-gpu-power-values-v2
 (defn- get-gpu-power-values-v2 ""
   [host]
-  (let [query-res (queries/get-lastval-NVIDIA-PLUGIN-v2 config/SERIE-NVIDIA-GPUs host)]
+  (let [query-res (queries/get-lastval-NVIDIA-XEONPHI-plugin config/SERIE-NVIDIA-GPUs host)]
     (if (= "SUCCESS" (query-res :res))
       (let [total-gpus  (/ (count ((first (get-in query-res [:response :results])) :series)) config/SERIE-NVIDIA-GPUs-total-metrics)]
         (into {}
@@ -468,7 +468,7 @@
 ;; FUNCTION: get-xeon-values
 (defn- get-xeon-values ""
   [host]
-  (let [query-res (queries/get-lastval-NVIDIA-PLUGIN-v2 config/SERIE-XEON-PHI host)]
+  (let [query-res (queries/get-lastval-NVIDIA-XEONPHI-plugin config/SERIE-XEON-PHI host)]
     (if (= "SUCCESS" (query-res :res))
       (let [total-gpus  (/ (count ((first (get-in query-res [:response :results])) :series)) config/SERIE-XEON-PHI-total-metrics)]
         (into {}
