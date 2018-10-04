@@ -1,19 +1,59 @@
 /*
- * gcc -o ipmi_plugin_pre ipmi_plugin_pre.c -lipmimonitoring
+ * Collectd IPMI plugin
+ *
+ * Copyright: Roi Sucasas Font, Atos Research and Innovation, 2017.
+ *
+ * This code is being developed for the TANGO Project: http://tango-project.eu
+ * and is licensed under a GNU General Public License, version 2. Please, refer to the LICENSE.TXT file for more information
+ *
+ * This plugin has been created taken as a basis the plugin template for collectd written by Sebastian Harl <sh@tokkee.org>
+ * https://github.com/collectd/collectd/tree/master/contrib/examples/myplugin.c
+ *
  */
 
- 
+/*
+ * Notes:
+ * - plugins are executed in parallel, thus, thread-safe functions need to be used
+ * - each of the functions below (except module_register) is optional
+ */
+
+#if ! HAVE_CONFIG_H
+
+#ifndef __USE_ISOC99 /* required for NAN */
+# define DISABLE_ISOC99 1
+# define __USE_ISOC99 1
+#endif /* !defined(__USE_ISOC99) */
+
+#include <math.h>
+
+#if DISABLE_ISOC99
+# undef DISABLE_ISOC99
+# undef __USE_ISOC99
+#endif /* DISABLE_ISOC99 */
+
+#include <time.h>
+
+#endif /* ! HAVE_CONFIG */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+
+// COLLECTD //
+#include "collectd.h"
+#include "common.h"
+#include "plugin.h"
+
+// IPMI //
 /*
  * freeipmi libs
  */
 #include <ipmi_monitoring.h>
 #include <ipmi_monitoring_bitmasks.h>
+
 
 /*
  * GLOBALS / IPMI configuration
@@ -23,7 +63,7 @@
 char *hostname = NULL;
 
 /* In-band Communication Configuration */
-/* 
+/*
  * On linux, you may wish to change driver_type to
  * IPMI_MONITORING_DRIVER_TYPE_OPENIPMI if you use /dev/ipmi0
  */
@@ -36,8 +76,8 @@ unsigned int workaround_flags = 0; /* Workarounds - specify workaround flags if 
 
 
 /* Initialize w/ record id numbers to only monitor specific record ids */
-unsigned int record_ids[] = {5, 51}; 	// {0}
-unsigned int record_ids_length = 2;		// 0
+unsigned int record_ids[] = {0}; 		// {5, 51}	 {0}
+unsigned int record_ids_length = 0; // 2  0
 
 /* Initialize w/ sensor types to only monitor specific sensor types
  * see ipmi_monitoring.h sensor types list.
@@ -107,6 +147,11 @@ int assume_bmc_owner = 0;
 int entity_sensor_names = 0;
 
 
+
+struct ipmi_monitoring_ipmi_config ipmi_config;
+
+
+
 /**
  * 'ipmi_config' initialization
  *
@@ -120,7 +165,7 @@ int init_ipmi_config (struct ipmi_monitoring_ipmi_config *ipmi_config) {
   ipmi_config->register_spacing = register_spacing;
   ipmi_config->driver_device = driver_device;
   ipmi_config->workaround_flags = workaround_flags;
-  
+
   return 0;
 }
 
@@ -234,7 +279,7 @@ const char * get_sensor_type_string (int sensor_type) {
  */
 int intialize_ipmi() {
 	int errnum;
-	
+
 	/* ipmi_monitoring_init */
 	if (ipmi_monitoring_init(ipmimonitoring_init_flags, &errnum) < 0) {
 		fprintf(stderr, "ipmi_monitoring_init: %s", ipmi_monitoring_ctx_strerror(errnum));
@@ -243,7 +288,7 @@ int intialize_ipmi() {
 	else {
 		printf("  > ipmi_monitoring initialized \n");
 	}
-	
+
 	/* ipmi_monitoring_ctx_create */
 	if (!(ctx = ipmi_monitoring_ctx_create())) {
 		fprintf(stderr, "ipmi_monitoring_ctx_create");
@@ -252,7 +297,7 @@ int intialize_ipmi() {
 	else {
 		printf("  > ipmi_monitoring context created \n");
 	}
-	
+
 	/* ipmi_monitoring_ctx_sdr_cache_directory */
 	if (sdr_cache_directory) {
 		if (ipmi_monitoring_ctx_sdr_cache_directory(ctx, sdr_cache_directory) < 0) {
@@ -263,7 +308,7 @@ int intialize_ipmi() {
 			printf("  > ipmi_monitoring context sdr_cache_directory: %s \n", sdr_cache_directory);
 		}
 	}
-	
+
 	/* Must call otherwise only default interpretations ever used */
 	if (ipmi_monitoring_ctx_sensor_config_file(ctx, sensor_config_file) < 0) {
 		fprintf(stderr, "ipmi_monitoring_ctx_sensor_config_file: %s", ipmi_monitoring_ctx_errormsg(ctx));
@@ -272,126 +317,99 @@ int intialize_ipmi() {
 	else {
 		printf("  > ipmi_monitoring context sensor_config_file: %s \n", sensor_config_file);
 	}
-	
+
 	return 0;
 }
 
 
-
-/**
- * monitoring...
- *
+/*
+ * This function is called once upon startup to initialize the plugin.
  */
-int ipmimonitoring(struct ipmi_monitoring_ipmi_config *ipmi_config) {
-	unsigned int sensor_reading_flags = 0;
-	int sensor_count;
-	unsigned int i;
-	
-	if (reread_sdr_cache)
-		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_REREAD_SDR_CACHE;
-
-	if (ignore_non_interpretable_sensors)
-		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_IGNORE_NON_INTERPRETABLE_SENSORS;
-
-	if (bridge_sensors)
-		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_BRIDGE_SENSORS;
-
-	if (interpret_oem_data)
-		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_INTERPRET_OEM_DATA;
-
-	if (shared_sensors)
-		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_SHARED_SENSORS;
-
-	if (discrete_reading)
-		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_DISCRETE_READING;
-
-	if (ignore_scanning_disabled)
-		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_IGNORE_SCANNING_DISABLED;
-
-	if (assume_bmc_owner)
-		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_ASSUME_BMC_OWNER;
-
-	if (entity_sensor_names)
-		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_ENTITY_SENSOR_NAMES;
-	
-	
-	if (!record_ids_length && !sensor_types_length) {
-		if ((sensor_count = ipmi_monitoring_sensor_readings_by_record_id(ctx, hostname, ipmi_config, sensor_reading_flags, NULL, 0, NULL, NULL)) < 0) {
-			fprintf (stderr, "ipmi_monitoring_sensor_readings_by_record_id: %s\n", ipmi_monitoring_ctx_errormsg(ctx));
-			return -1;
-        }
-		else {
-			printf("  > Total sensors (I): %i \n", sensor_count);
+static int my_init(void) {
+	if (init_ipmi_config(&ipmi_config) == 0) {
+		printf("  IPMI configuration done\n");
+		printf("- Initializing IPMI ...\n");
+		if (intialize_ipmi() == 0) {
+			printf("  IPMI library intialized\n");
 		}
-    }
-	else if (record_ids_length) {
-		if ((sensor_count = ipmi_monitoring_sensor_readings_by_record_id(ctx, hostname, ipmi_config, sensor_reading_flags, record_ids, record_ids_length, NULL, NULL)) < 0) {
-			fprintf(stderr, "ipmi_monitoring_sensor_readings_by_record_id: %s\n", ipmi_monitoring_ctx_errormsg(ctx));
-			return -1;
-        }
 		else {
-			printf("  > Total sensors (II): %i \n", sensor_count);
+			printf("- ERROR: during the IMPI initialization!\n");
+			return -1;
 		}
-    }
+	}
 	else {
-		if ((sensor_count = ipmi_monitoring_sensor_readings_by_sensor_type(ctx, hostname, ipmi_config, sensor_reading_flags, sensor_types, sensor_types_length, NULL, NULL)) < 0) {
-			fprintf(stderr, "ipmi_monitoring_sensor_readings_by_sensor_type: %s\n", ipmi_monitoring_ctx_errormsg(ctx));
-			return -1;
-        }
-		else {
-			printf("  > Total sensors (III): %i \n", sensor_count);
-		}
-    }
+		printf("- ERROR: while configuring IMPI!\n");
+		return -1;
+	}
 
-	printf("Record ID, Sensor Name, Sensor Type, Sensor Reading, Sensor Units \n");
-	
-	
-	for (i = 0; i < sensor_count; i++, ipmi_monitoring_sensor_iterator_next(ctx)) {
-		int record_id, sensor_type, sensor_reading_type, sensor_units;
-		char *sensor_name = NULL;
-		void *sensor_reading;
-		const char *sensor_type_str;
-		
-		/* ID */
-		if ((record_id = ipmi_monitoring_sensor_read_record_id(ctx)) < 0) {
-			fprintf(stderr, "ipmi_monitoring_sensor_read_record_id: %s\n", ipmi_monitoring_ctx_errormsg(ctx));
-			return -1;
-        }
-		
-		/* NAME */
-		if (!(sensor_name = ipmi_monitoring_sensor_read_sensor_name(ctx))) {
-			fprintf(stderr, "ipmi_monitoring_sensor_read_sensor_name: %s\n", ipmi_monitoring_ctx_errormsg(ctx));
-			return -1;
-        }
-		if (!strlen(sensor_name)) {
-			sensor_name = "N/A";
-		}
-		
+	return 0;
+}
+
+
+/*
+ * submitValue:
+ * 	This is a utility function used by the read callback to populate a value_list_t
+ * 	and pass it to plugin_dispatch_values.
+ */
+static int submitValue(gauge_t value, const char *type, unsigned int deviceIndex) {
+	char strDeviceIndex[8];
+	value_list_t vl = VALUE_LIST_INIT;
+
+	vl.values = &(value_t) { .gauge = value }; /* Convert the gauge_t to a value_t and add it to the value_list_t. */
+	vl.values_len = 1;
+
+	sprintf(strDeviceIndex, "%d", deviceIndex);
+
+	sstrncpy(vl.host, hostname_g, sizeof (vl.host));
+	sstrncpy(vl.plugin, "ipmi", sizeof (vl.plugin));
+	sstrncpy(vl.plugin_instance, strDeviceIndex, sizeof (vl.plugin_instance));
+	sstrncpy(vl.type, type, sizeof (vl.type));
+
+	/* dispatch the values to collectd which passes them on to all registered write functions */
+	return plugin_dispatch_values(&vl);
+}
+
+
+/*
+ * processmetric:
+ * 	process values from metric.
+ */
+int processmetric(int record_id, char * metric_name, char * sensor_name) {
+	char nametmp[50];
+	int sensor_type, sensor_reading_type, sensor_units;
+	void *sensor_reading;
+	const char *sensor_type_str;
+	int result;
+
+  /* Compare sensor_name and metric_name */
+	strcpy(nametmp, sensor_name);
+	result = strcmp(metric_name, nametmp);
+
+	/* If the two strings are the same say so */
+	if (result == 0) {
 		/* TYPE */
 		if ((sensor_type = ipmi_monitoring_sensor_read_sensor_type(ctx)) < 0) {
 			fprintf(stderr, "ipmi_monitoring_sensor_read_sensor_type: %s\n", ipmi_monitoring_ctx_errormsg(ctx));
 			return -1;
-        }
+		}
 		sensor_type_str = get_sensor_type_string(sensor_type);
-		
-		
+
 		printf("%u, %s, %s", record_id, sensor_name, sensor_type_str);
-		
-		
+
 		/* UNITS */
 		if ((sensor_units = ipmi_monitoring_sensor_read_sensor_units (ctx)) < 0)
-        {
+		{
 			fprintf(stderr, "ipmi_monitoring_sensor_read_sensor_units: %s\n", ipmi_monitoring_ctx_errormsg(ctx));
 			return -1;
-        }
-		
+		}
+
 		/* VALUE !! */
 		if ((sensor_reading_type = ipmi_monitoring_sensor_read_sensor_reading_type(ctx)) < 0) {
 			fprintf(stderr, "ipmi_monitoring_sensor_read_sensor_reading_type: %s\n", ipmi_monitoring_ctx_errormsg(ctx));
 			return -1;
-        }
+		}
 		sensor_reading = ipmi_monitoring_sensor_read_sensor_reading(ctx);
-		
+
 		if (sensor_reading) {
 			const char *sensor_units_str;
 
@@ -422,53 +440,158 @@ int ipmimonitoring(struct ipmi_monitoring_ipmi_config *ipmi_config) {
 				sensor_units_str = "N/A";
 
 			printf (", %s", sensor_units_str);
-        }
+		}
 		else {
 			printf (", N/A, N/A");
 		}
-	
-		
-		
-		printf ("\n");
+
+    /* COLLECTD */
+    // TODO collectd types!!!
+    // TODO cardnum = 1
+    if (sensor_reading_type == IPMI_MONITORING_SENSOR_READING_TYPE_UNSIGNED_INTEGER32) {
+      if (submitValue(*((uint32_t *)sensor_reading), "power", record_id) != 0) {
+        WARNING("ipmi_plugin: Dispatching a value [power] failed.");
+      }
+    }
+    else if (sensor_reading_type == IPMI_MONITORING_SENSOR_READING_TYPE_DOUBLE) {
+      if (submitValue(*((double *)sensor_reading), "power", record_id) != 0) {
+        WARNING("ipmi_plugin: Dispatching a value [power] failed.");
+      }
+    }
 	}
-	
-	
+
 	return 0;
 }
 
 
-
-/**
- *
- *
+/*
+ * This function is called in regular intervalls to collect the data.
  */
-int main (int argc, char **argv) {
-	struct ipmi_monitoring_ipmi_config ipmi_config;
+static int my_read (void) {
+	unsigned int sensor_reading_flags = 0;
+	int sensor_count;
+	unsigned int i;
 
-	printf("-----\n");
-	printf("- Configuring IPMI ...\n");
-	if (init_ipmi_config(&ipmi_config) == 0) {
-		printf("  IPMI configuration done\n");
-		printf("- Initializing IPMI ...\n");
-		if (intialize_ipmi() == 0) {
-			printf("  IPMI library intialized\n");
+	if (reread_sdr_cache)
+		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_REREAD_SDR_CACHE;
+
+	if (ignore_non_interpretable_sensors)
+		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_IGNORE_NON_INTERPRETABLE_SENSORS;
+
+	if (bridge_sensors)
+		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_BRIDGE_SENSORS;
+
+	if (interpret_oem_data)
+		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_INTERPRET_OEM_DATA;
+
+	if (shared_sensors)
+		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_SHARED_SENSORS;
+
+	if (discrete_reading)
+		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_DISCRETE_READING;
+
+	if (ignore_scanning_disabled)
+		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_IGNORE_SCANNING_DISABLED;
+
+	if (assume_bmc_owner)
+		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_ASSUME_BMC_OWNER;
+
+	if (entity_sensor_names)
+		sensor_reading_flags |= IPMI_MONITORING_SENSOR_READING_FLAGS_ENTITY_SENSOR_NAMES;
+
+
+	if (!record_ids_length && !sensor_types_length) {
+		if ((sensor_count = ipmi_monitoring_sensor_readings_by_record_id(ctx, hostname, ipmi_config, sensor_reading_flags, NULL, 0, NULL, NULL)) < 0) {
+			fprintf (stderr, "ipmi_monitoring_sensor_readings_by_record_id: %s\n", ipmi_monitoring_ctx_errormsg(ctx));
+			return -1;
 		}
 		else {
-			printf("- ERROR: during the IMPI initialization!\n");
+			printf("  > Total sensors (I): %i \n", sensor_count);
+		}
+	}
+	else if (record_ids_length) {
+		if ((sensor_count = ipmi_monitoring_sensor_readings_by_record_id(ctx, hostname, ipmi_config, sensor_reading_flags, record_ids, record_ids_length, NULL, NULL)) < 0) {
+			fprintf(stderr, "ipmi_monitoring_sensor_readings_by_record_id: %s\n", ipmi_monitoring_ctx_errormsg(ctx));
 			return -1;
+		}
+		else {
+			printf("  > Total sensors (II): %i \n", sensor_count);
 		}
 	}
 	else {
-		printf("- ERROR: while configuring IMPI!\n");
-		return -1;
-	}
-	
-	printf("- Starting IPMI monitoring ...\n");
-	if (ipmimonitoring (&ipmi_config) < 0) {
-		printf("- ERROR: while monitoring!\n");
-		return -1;
+		if ((sensor_count = ipmi_monitoring_sensor_readings_by_sensor_type(ctx, hostname, ipmi_config, sensor_reading_flags, sensor_types, sensor_types_length, NULL, NULL)) < 0) {
+			fprintf(stderr, "ipmi_monitoring_sensor_readings_by_sensor_type: %s\n", ipmi_monitoring_ctx_errormsg(ctx));
+			return -1;
+		}
+		else {
+			printf("  > Total sensors (III): %i \n", sensor_count);
+		}
 	}
 
-	printf("-----\n");
+  for (i = 0; i < sensor_count; i++, ipmi_monitoring_sensor_iterator_next(ctx)) {
+		int record_id;
+		char *sensor_name = NULL;
+		/* Create arrays to hold metrics names */
+		char name1[60];
+		char name2[60];
+		char name3[60];
+		char name4[60];
+    char name5[60];
+    char name6[60];
+    char name7[60];
+
+		/* Copy strings into the data arrays */
+		strcpy(name1, "CPU0 Pwr");
+		strcpy(name2, "CPU1 Pwr");
+		strcpy(name3, "CPU0 DIM01 Pwr");
+		strcpy(name4, "CPU0 DIM23 Pwr");
+    strcpy(name5, "CPU1 DIM01 Pwr");
+		strcpy(name6, "CPU1 DIM23 Pwr");
+    strcpy(name7, "Blade Pwr");
+
+		/* ID */
+		if ((record_id = ipmi_monitoring_sensor_read_record_id(ctx)) < 0) {
+			fprintf(stderr, "ipmi_monitoring_sensor_read_record_id: %s\n", ipmi_monitoring_ctx_errormsg(ctx));
+			return -1;
+    }
+
+		/* NAME */
+		if (!(sensor_name = ipmi_monitoring_sensor_read_sensor_name(ctx))) {
+			fprintf(stderr, "ipmi_monitoring_sensor_read_sensor_name: %s\n", ipmi_monitoring_ctx_errormsg(ctx));
+			return -1;
+    }
+		if (!strlen(sensor_name)) {
+			sensor_name = "N/A";
+		}
+
+		processmetric(record_id, name1, sensor_name);
+		processmetric(record_id, name2, sensor_name);
+		processmetric(record_id, name3, sensor_name);
+		processmetric(record_id, name4, sensor_name);
+    processmetric(record_id, name5, sensor_name);
+    processmetric(record_id, name6, sensor_name);
+    processmetric(record_id, name7, sensor_name);
+
+	}
+
 	return 0;
+}
+
+
+/*
+ * This function is called before shutting down collectd.
+ */
+static int my_shutdown(void) {
+	return 0;
+}
+
+
+/*
+ * This function is called after loading the plugin to register it with collectd.
+ */
+void module_register(void) {
+	plugin_register_read("ipmi_plugin", my_read);
+	plugin_register_init("ipmi_plugin", my_init);
+	plugin_register_shutdown("ipmi_plugin", my_shutdown);
+	return;
 }

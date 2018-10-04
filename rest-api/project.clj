@@ -3,8 +3,8 @@
 ;;
 ;; Copyright: Roi Sucasas Font, Atos Research and Innovation, 2017.
 ;;
-;; This code is licensed under an Apache 2.0 license. Please, refer to the
-;; LICENSE.TXT file for more information
+;; This code is licensed under a GNU General Public License, version 2 license.
+;; Please, refer to the LICENSE.TXT file for more information
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defproject rest-api "0.1.1"
   :description "Monitoring Infrastructure REST API"

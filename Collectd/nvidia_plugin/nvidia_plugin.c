@@ -3,8 +3,8 @@
  *
  * Copyright: Roi Sucasas Font, Atos Research and Innovation, 2017.
  *
- * This code is being developed for the TANGO Project: http://tango-project.euThis
- * and is licensed under an Apache 2.0 license. Please, refer to the LICENSE.TXT file for more information
+ * This code is being developed for the TANGO Project: http://tango-project.eu
+ * and is licensed under a GNU General Public License, version 2. Please, refer to the LICENSE.TXT file for more information
  *
  * This plugin has been created taken as a basis the plugin template for collectd written by Sebastian Harl <sh@tokkee.org>
  * https://github.com/collectd/collectd/tree/master/contrib/examples/myplugin.c
