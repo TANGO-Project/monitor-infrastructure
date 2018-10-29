@@ -8,6 +8,8 @@ The Monitoring Infrastructure is a component of the European Project TANGO (http
 
 -----------------------
 
+[LICENSE](#license)
+
 [Description](#description)
 
 [Component architecture](#component-architecture)
@@ -142,3 +144,21 @@ The other TANGO components connect to the monitoring Infrastructure through the 
 - Energy modeller
 
 - Self-Adaptation Manager
+
+-----------------------
+
+### LICENSE
+
+The Monitoring Infrastructure project is licensed under a [GNU General Public License, version 2](LICENSE.TXT).
+
+The `rest-api` component depends on a set of libraries and plugins licensed under the [Eclipse Public License v1](https://www.eclipse.org/legal/epl-v10.html) and the [Eclipse Public License v2](https://www.eclipse.org/legal/epl-v20.html). These libraries are used and imported through [leiningen](https://leiningen.org/) or [maven](https://maven.apache.org/), and they don't belong to the distribution of this project. This means that the original source code of these libraries was not modified. These libraries are the following:
+
+
+| Library                    | Version               | Project URL                            |
+|----------------------------|-----------------------|----------------------------------------|
+| ring-cors/ring-cors        | 0.1.10                | https://github.com/r0man/ring-cors |
+| compojure                  | 1.5.1                 | https://github.com/weavejester/compojure |
+| org.clojure/tools.logging  | 0.3.1                 | https://github.com/clojure/tools.logging |
+| org.clojure/data.json      | 0.2.6                 | https://github.com/clojure/data.json |
+| lein-ring                  | 0.12.0                | https://github.com/weavejester/lein-ring |
+| lein-uberwar               | 0.2.0                 | https://github.com/luminus-framework/lein-uberwar |

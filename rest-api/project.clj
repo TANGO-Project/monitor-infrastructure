@@ -11,7 +11,7 @@
   :url "http://localhost"
   :min-lein-version "1.8.0"
   :dependencies [ [org.clojure/clojure "1.8.0"]
-                  [compojure "1.5.1"]
+                  [compojure "1.5.1"]                   ; Eclipse Public License ; https://github.com/weavejester/compojure/blob/master/LICENSE.html
                   [cheshire "5.7.1"]                    ; MIT License ; https://github.com/dakrone/cheshire
                   [clj-http "3.5.0"]                    ; MIT License ; https://github.com/dakrone/clj-http/
                   [ring-cors/ring-cors "0.1.10"]        ; Eclipse Public License ; https://github.com/r0man/ring-cors
@@ -24,8 +24,7 @@
                                   com.sun.jdmk/jmxtools
                                   com.sun.jmx/jmxri]]
                   [clj-time "0.14.0"]                   ; MIT License ; https://github.com/clj-time/clj-time
-                  [org.clojure/data.json "0.2.6"]       ; Eclipse Public License - Version 1.0  https://github.com/clojure/data.json
-                  [proto-repl "0.3.1"]]
+                  [org.clojure/data.json "0.2.6"]]      ; Eclipse Public License - Version 1.0  https://github.com/clojure/data.json
   :plugins [[lein-ring "0.12.0"]
             [lein-uberwar "0.2.0"]]
   :uberwar {:handler rest-api.handler/app}
@@ -33,8 +32,4 @@
          :port 8082
          :open-browser? false
          :resources-war-path "WEB-INF/classes/"}
-  :profiles
-    {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
-                          [ring/ring-mock "0.3.0"]]}
-  ;; jvm configuration
-  :jvm-opts ["-Xmx256M"]})
+  :jvm-opts ["-Xmx256M"])
