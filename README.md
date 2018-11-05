@@ -2,7 +2,7 @@
 
 &copy; Atos Spain S.A. 2016
 
-[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.txt)
 
 The Monitoring Infrastructure is a component of the European Project TANGO (http://tango-project.eu ).
 
@@ -149,7 +149,7 @@ The other TANGO components connect to the monitoring Infrastructure through the 
 
 ### LICENSE
 
-The Monitoring Infrastructure project is licensed under a [GNU General Public License, version 2](LICENSE.TXT).
+The Monitoring Infrastructure project is licensed under a [GNU General Public License, version 3](LICENSE.TXT).
 
 The `rest-api` component depends on a set of libraries and plugins licensed under the [Eclipse Public License v1](https://www.eclipse.org/legal/epl-v10.html) and the [Eclipse Public License v2](https://www.eclipse.org/legal/epl-v20.html). These libraries are used and imported through [leiningen](https://leiningen.org/) or [maven](https://maven.apache.org/), and they don't belong to the distribution of this project. This means that the original source code of these libraries was not modified. These libraries are the following:
 

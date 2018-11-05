@@ -3,7 +3,7 @@
 ;;
 ;; Copyright: Roi Sucasas Font, Atos Research and Innovation, 2017.
 ;;
-;; This code is licensed under a GNU General Public License, version 2 license.
+;; This code is licensed under a GNU General Public License, version 3 license.
 ;; Please, refer to the LICENSE.TXT file for more information
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ns rest-api.config
